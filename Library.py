@@ -1,5 +1,28 @@
 from Book import Book
 from User import User
+import sqlite3
+
+class library_DB:
+    def __init__(self, name_database):
+        self.name_database = name_database
+        self.connection = sqlite3.connect(self.name_database)
+        self.cursor = self.connection.cursor()
+    def create_database(self):
+        self.cursor.execute(
+            '''
+            CREATE TABLE IF NOT EXISTS Library_db
+            (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            title VARCHAR(150) NOT NULL,
+            author VARCHAR(100) NOT NULL,
+            year VARCHAR(4) NOT NULL, 
+            is_checked_out BOO INTEGER NOT NULL,
+            personal_number INTEGER NOT NULL UNIQUE
+            )
+            '''
+        )
+
+
 class Library:
     def __init__(self):
         pass
@@ -15,13 +38,7 @@ class Library:
         ...
     def return_book(self, book_id, user_id):
         ...
-    def generate_report(self)::
-    ...
+    def generate_report(self):
+        ...
 
-add_book(book: Book) - добавление книги.
-remove_book(book_id: int) - удаление книги по ID.
-find_book(book_id: int) - поиск книги по ID.
-register_user(user: User) - регистрация пользователя.
-checkout_book(book_id: int, user_id: int) - выдача книги пользователю.
-return_book(book_id: int, user_id: int) - возврат книги пользователем.
 
