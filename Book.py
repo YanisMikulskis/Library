@@ -42,12 +42,13 @@ class Book:
         request_html = requests.get(url)
         soup = BeautifulSoup(request_html.text, 'html.parser')
         self.title = re.findall(r'>(.+)</a>', str(soup.find_all(class_='blvi__title')))[0]
+        self.title = self.title[:-1] if self.title[-1] == ' ' else self.title
         book_info =  str(soup.find_all(class_='blvi__book_info'))
         self.author = re.findall(r'>([а-яА-Я ]+)<', book_info)[0]
         try: #если поле года каким то образом оказалось пустым
             self.year = [i for i in book_info.split() if len(i) == 4 and i.isdigit()][0]
         except IndexError:
-            self.year = 0000
+            self.year = 0
         # self.personal_number = randint(10000, 99999)
         # self.all_data = [self.title, self.author, self.year, self.is_checked_out, self.personal_number]
         self.book_data = [self.title, self.author, self.year]
