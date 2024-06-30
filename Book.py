@@ -1,34 +1,10 @@
-# from selenium import webdriver
-#
-#
-#
-# driver = webdriver.Safari()
-# driver.get('https://readly.ru/books/i_am_lucky/?show=1')
-# element = driver.find_element_by_css_selector('<button class="btn-orange-big-20">Мне повезет</button>')
-# element.click()
-
 
 from random import randint
 import webbrowser
 from bs4 import BeautifulSoup
 import requests
 import re
-# create webdriver object
-# driver = webdriver.Safari()
 
-# get lambdatest
-# driver.get("https://readly.ru/books/i_am_lucky/?show=1")
-# for i in range(3):
-#     url = "https://readly.ru/books/i_am_lucky/?show=1"
-#     webbrowser.open_new(url)
-# url = "https://readly.ru/books/i_am_lucky/?show=1"
-# for i in range(3):
-#     request_html = requests.get(url)
-#     soup = BeautifulSoup(request_html.text, 'html.parser')
-#
-#     name_book = re.findall(r'>(.+)</a>', str(soup.find_all(class_='blvi__title')))
-#     author_book = re.search(r'>([а-яА-Я ]+)<', str(soup.find_all(class_='blvi__book_info')))
-#     year_book = [i for i in book_info.split() if len(i) == 4 and i.isdigit()]
 
 class Book:
     def __init__(self):

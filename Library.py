@@ -6,13 +6,13 @@ import random
 import re
 
 
-class library_DB:
+class library_DB:  # Класс создания БД
     def __init__(self, name_database: str):
         self.name_database: str = name_database
         self.connection = sqlite3.connect(self.name_database)
         self.cursor = self.connection.cursor()
 
-    def create_tables(self) -> None:
+    def create_tables(self) -> None:  # Метод создания таблиц библиотеки и зареганных пользователей
         self.cursor.execute(
             '''
             CREATE TABLE IF NOT EXISTS Users_db
@@ -43,19 +43,13 @@ class library_DB:
 
 db_library = library_DB('Library_Database')
 db_library.create_tables()
-print(type(library_DB('Library_Database')))
-db_library.cursor.execute('''UPDATE Library_db SET is_checked_out = 0 WHERE user_book_id NOT NULL;''')
-db_library.connection.commit()
 
-
-# db_cont.cursor.execute('''UPDATE Contacts_list SET name=:name, number_phone=:number,email=:email
-# WHERE id=:id;'''
-class Library:
+class Library:  # Основной класс приложения
     def __init__(self):
         self.DB: library_DB = db_library
 
     @staticmethod
-    def last_number() -> Union[bool, int]:
+    def last_number() -> Union[bool, int]:  # Стат. метод извлечения последнего уникального номера книги
         db_library.cursor.execute('''SELECT personal_number FROM Library_db;''')
         all_personal_numbers = list(map(lambda number_tuple: number_tuple[0], db_library.cursor.fetchall()))
         if not all_personal_numbers:
@@ -63,45 +57,45 @@ class Library:
         else:
             return all_personal_numbers[-1] + 1
 
-    def add_book(self) -> Callable:
-        def query_insert(data) -> None:
+    def add_book(self) -> None:  # Метод добавления новой книги в библиотеку
+        def query_insert(data) -> Callable:  # Доп. функция для вставки данных в табл. (чтобы не было code duplication)
             self.DB.cursor.execute('''INSERT INTO Library_db
                                                     (title, author, year, is_checked_out, personal_number, user_book_id)
                                                     VALUES(?, ?, ?, ?, ?, null);''', data)
-            self.DB.connection.commit()
+            return self.DB.connection.commit()
 
         choice = int(input('Добавить случайную книгу из сети - нажмите 1\n'
                            'Ввести вручную данные - нажмите 2\n'
                            'Вернуться в главное меню программы - нажмите 3\n'))
-        if choice == 1:
+        if choice == 1:  # команда добавления случайных книг из Сети
             quantity = int(input('Сколько случайных книг нужно добавить?'))
             all_book_data = make_books(quantity=quantity)
             for insert in range(quantity):
                 personal_number = 1000 if not self.last_number() else self.last_number()
                 all_data = [*all_book_data[insert], 1, personal_number]
-                return query_insert(data=all_data)
+                query_insert(data=all_data)
 
-        elif choice == 2:
+        elif choice == 2:  # команда ручного добавления книги
             title = input('Введите название книги')
             author = input('Введите автора книги')
             year = input('Введите год издания')
             personal_number = self.number_extraction()[-1] + 1
             all_data = [title, author, year, 1, personal_number]
-            return query_insert(data=all_data)
-        elif choice == 3:
-            return main()
+            query_insert(data=all_data)
+        elif choice == 3:  # команда возврата к командам
+            main()
 
-        else:
+        else:  # иначе перезапускаем данный метод
             print(f'Ошибка! введите 1 или 2')
-            return self.add_book()
+            self.add_book()
 
-    def remove_book(self) -> None:
+    def remove_book(self) -> None:  # метод удаления книги из библиотеки
         id_remove_book = int(input(f'Какую книгу нужно удалить? введите ID'))
         self.DB.cursor.execute('''DELETE FROM Library_db WHERE id=:id;''', dict(id=id_remove_book))
         self.DB.cursor.execute('''UPDATE sqlite_sequence set seq = 0 WHERE name = 'Library_db';''')
         self.DB.connection.commit()
 
-    def find_book(self) -> None:
+    def find_book(self) -> None:  # метод поиска книги в библиотеке по названию
         title = input(f'Введите название книги, которую нужно найти')
         print(f'Введенное название книги: {title}')
         self.DB.cursor.execute('''SELECT * FROM Library_db WHERE title=:title;''', dict(title=title))
@@ -111,7 +105,7 @@ class Library:
             find_books = self.DB.cursor.fetchall()
             if not find_books:  # если книги такой вообще нет
                 print(f'Такой книги в библиотеке нет! Попробуйте ввести что-нибудь другое')
-                return self.find_book()
+                self.find_book()
 
         for book in find_books:
             availability = f'Есть' if not book[4] else f'На руках'
@@ -124,11 +118,11 @@ class Library:
                                            dict(foreight_key=book[6]))
 
                     data_user = self.DB.cursor.fetchall()[0]
-                    return (f'id пользователя: {data_user[0]}\n'
+                    print(f'id пользователя: {data_user[0]}\n'
                             f'Имя пользователя: {data_user[1]}\n'
                             f'Почта для связи: {data_user[2]}')
                 else:
-                    return f'Книга в библиотеке'
+                    print(f'Книга в библиотеке')
 
             print(f'id: {book[0]}\n'
                   f'Название: {book[1]}\n'
@@ -138,60 +132,84 @@ class Library:
                   f'Индивидуальный номер: {book[5]}\n'
                   f'Местоположение книги:\n{exam_book()}\n')
 
-    def register_user(self) -> Union[None, Callable]:
+    def register_user(self) -> None:  # метод регистрации нового пользователя библиотеки
         print(f'Регистрация нового пользователя')
         print('###################')
         name = input(f'Введите имя пользователя: ')
-        email = input(f'Введите электроную почту пользователя')
+        email = input(f'Введите электронную почту пользователя')
         email_domain = re.findall(r'@+\S+', email)[0]
         domains = ['@mail.ru', '@gmail.com', '@rambler.ru', '@yahoo.com', '@yandex.ru']
         if email_domain in domains:
             self.DB.cursor.execute('''INSERT INTO Users_db(name, email) VALUES(?, ?);''', (name, email))
-            return self.DB.connection.commit()
+            self.DB.connection.commit()
         else:
             print(f'Введите правильный формат почты')
-            return self.register_user()
+            self.register_user()
 
-    def checkout_book(self) -> None:
-        user_id = int(input(f'Какому пользователю нужно выдать книгу? Введите его id'))
+    def checkout_book(self) -> None:  # Метод выдачи книги выбранному пользователю
+        user_id = int(input(f'Какому пользователю нужно выдать книгу? Введите его id\n'))
         self.DB.cursor.execute('''SELECT name FROM users_db WHERE id=:id;''', dict(id=user_id))
         name_user = self.DB.cursor.fetchall()[0][0]
         personal_number = int(input(f'Какую книгу вы хотите выдать пользователю {name_user}? '
                                     f'Введите персональный номер книги\n'))
+        self.DB.cursor.execute('''SELECT user_book_id FROM Library_db WHERE personal_number=:personal_number;''',
+                               dict(personal_number=personal_number))
 
-        self.DB.cursor.execute('''UPDATE Library_db SET user_book_id = (SELECT id FROM Users_db WHERE id=:user_id)
-                                    WHERE personal_number=:personal_number;''',
-                               dict(user_id=user_id, personal_number=personal_number))
-        return self.DB.connection.commit()
+        user_book_id = self.DB.cursor.fetchall()[0][0]
 
-    def return_book(self) -> str:
+        if user_book_id:
+            print(f'Книга уже выдана другому пользователю! Введите номер другой книги')
+            self.checkout_book()
+        else:
+            self.DB.cursor.execute('''UPDATE Library_db SET user_book_id = (SELECT id FROM Users_db WHERE id=:user_id)
+                                        WHERE personal_number=:personal_number;''',
+                                   dict(user_id=user_id, personal_number=personal_number))
+            self.DB.connection.commit()
+
+    def return_book(self) -> None:  # Метод возврата книги в библиотеку от пользователя
         user_id = int(input(f'Какой пользователь возвращает книгу? Введите id'))
-        self.DB.cursor.execute('''SELECT name FROM Users_db WHERE id=:id;''', dict(id=user_id))
-        user_name = self.DB.cursor.fetchall()[0][0]
-        title = input(f'Какую книгу он возвращает? Введите название')
-        print(list(title))
-        print(title[-1])
-        return f'Пользователь {user_name} вернул книгу {title}'
+        self.DB.cursor.execute('''SELECT name, id FROM Users_db WHERE id=:id;''', dict(id=user_id))
 
-    def checkout_report(self, *for_return) -> str:
+        user_data = self.DB.cursor.fetchall()[0]
+
+        self.DB.cursor.execute('''SELECT Library_db.id, Library_db.title, Library_db.personal_number 
+                                        FROM Library_db
+                                        WHERE user_book_id=:user_id;''', dict(user_id=user_data[1]))
+
+        user_books = self.DB.cursor.fetchall()
+        user_books_numbers = [book[-1] for book in user_books]
+        return_book_number = int(input(f'Какую книгу возвращает {user_data[0]}? Введите ее уникальный номер\n'))
+
+        if return_book_number not in user_books_numbers:
+            print(f'Пользователь {user_data[0]} не брал такой книги! Введите правильный номер')
+            self.return_book()
+        else:
+            self.DB.cursor.execute('''UPDATE Library_db SET user_book_id=null WHERE personal_number=:personal_number;''',
+                                   dict(personal_number = return_book_number))
+            self.DB.connection.commit()
+            title_return_book = ''.join([book[1] for book in user_books if book[-1] == return_book_number])
+            print(f'Пользователь {user_data[0]} вернул книгу <{title_return_book}> в библиотеку! Молодец!')
+
+    def checkout_report(self, for_return: bool) -> None:  # Метод создания отчета о книгах на руках
         self.DB.cursor.execute('''SELECT * FROM Library_db;''')
         all_books = self.DB.cursor.fetchall()
         book_on_hands = [book for book in all_books if book[-1] is not None]
         if not for_return:
-            return f'На руках находится {len(book_on_hands)}/{len(all_books)} книг.'
+            print(f'На руках находится {len(book_on_hands)}/{len(all_books)} книг.')
         else:
-            return f'В библиотеке находится книг: {len(all_books) - len(book_on_hands)} шт.'
+           print(f'В библиотеке находится книг: {len(all_books) - len(book_on_hands)} шт.')
 
-    def return_report(self) -> Callable:
-        return self.checkout_report(True)
+    def return_report(self) -> Callable:  # Метод создания отчета о книгах библиотеке
+        return self.checkout_report(for_return = True)
 
-    def general_report(self) -> None:
-
-        self.checkout_report(True)
-        self.checkout_report()
+    def general_report(self) -> None:  # Метод создания общего главного отчета о состоянии библиотеки и пользователях
+        print(self.checkout_report(for_return=True))
+        print(self.checkout_report(for_return=False))
 
         self.DB.cursor.execute('''SELECT * FROM Users_db;''')
         library_users, number_user = self.DB.cursor.fetchall(), 1
+        print(f'ПОЛЬЗОВАТЕЛИ:')
+        print(f'######################')
         print(f'Список всех пользователей библиотеки:')
         for user in library_users:
             print(f'{number_user}. Имя: {user[1]}\nПочта: {user[2]}')
@@ -202,6 +220,7 @@ class Library:
                                     FROM Library_db
                                     JOIN Users_db ON Users_db.id=Library_db.user_book_id;''')
         users_book = self.DB.cursor.fetchall()
+
         print(f'Список пользователей, которые взяли хотя бы одну книгу.')
         users_book_dict = {val[-1]: [] for val in users_book}
         for data in users_book:
@@ -215,10 +234,27 @@ class Library:
             books = '\n'.join(books)
             print(f'Пользователь {user} взял книги:\n{books}')
             print()
+        print(f'######################')
+        print(f'КНИГИ:')
+        print(f'######################')
+        print(f'Все книги:')
+        self.DB.cursor.execute('''SELECT * FROM Library_db;''')
+        all_books = list(map(list, self.DB.cursor.fetchall()))
+
+        for book in all_books:
+
+            if book[-1]:
+                self.DB.cursor.execute('''SELECT name FROM Users_db WHERE id=:id;''', dict(id=book[-1]))
+                book_location = f'Книга у {self.DB.cursor.fetchall()[0][0]}'
+            else:
+                book_location = f'В библиотеке'
+            book[-1] = book_location
+            print(' | '.join(list(map(str, book))))
+
+
 
 
 lib = Library()
-
 print(f'Добро пожаловать в онлайн библиотеку!')
 commands = {
     1: lambda: lib.add_book(),
@@ -227,13 +263,13 @@ commands = {
     4: lambda: lib.register_user(),
     5: lambda: lib.checkout_book(),
     6: lambda: lib.return_book(),
-    7: lambda: lib.checkout_report(),
+    7: lambda: lib.checkout_report(False),
     8: lambda: lib.return_report(),
     9: lambda: lib.general_report()
 }
 
 
-def main():
+def main() -> None:  # Функция запуска словаря лямбда функций с вызовами методов класса Library
     while 1:
         start_app = int(input('Что хотите сделать? Введите соответсвующую цифру!\n'
                               '1 - Добавить книгу в библиотеку\n'
@@ -248,10 +284,6 @@ def main():
 
         commands[start_app]()
 
+if __name__ == '__main__':
+    main()
 
-main()
-# lib.add_book('Капитанская дочка', 'А.С.Пушкин', 1836, 0, random.randint(1000,9999))
-# lib.remove_book(3)
-# lib.register_book('VASYA', 'VAS@ail.ru')
-# lib.checkout_book(1)
-# lib.return_book(
