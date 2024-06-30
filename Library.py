@@ -44,6 +44,7 @@ class library_DB:  # Класс создания БД
 db_library = library_DB('Library_Database')
 db_library.create_tables()
 
+
 class Library:  # Основной класс приложения
     def __init__(self):
         self.DB: library_DB = db_library
@@ -79,7 +80,7 @@ class Library:  # Основной класс приложения
             title = input('Введите название книги')
             author = input('Введите автора книги')
             year = input('Введите год издания')
-            personal_number = self.number_extraction()[-1] + 1
+            personal_number = 1000 if not self.last_number() else self.last_number()
             all_data = [title, author, year, 1, personal_number]
             query_insert(data=all_data)
         elif choice == 3:  # команда возврата к командам
@@ -110,7 +111,10 @@ class Library:  # Основной класс приложения
         for book in find_books:
             availability = f'Есть' if not book[4] else f'На руках'
 
-            def exam_book() -> Union[tuple, str]:  # Выводим данные юзера у кого книга, иначе ничего
+            def exam_book() -> Union[tuple, str]:
+                """
+                Функция вывода пользователей, если они брали книгу, иначе - сообщение о том, что книга в библиотеке
+                """
                 if book[6]:
                     self.DB.cursor.execute('''SELECT Users_db.id, Users_db.name, Users_db.email
                                                     FROM Library_db
@@ -119,8 +123,8 @@ class Library:  # Основной класс приложения
 
                     data_user = self.DB.cursor.fetchall()[0]
                     print(f'id пользователя: {data_user[0]}\n'
-                            f'Имя пользователя: {data_user[1]}\n'
-                            f'Почта для связи: {data_user[2]}')
+                          f'Имя пользователя: {data_user[1]}\n'
+                          f'Почта для связи: {data_user[2]}')
                 else:
                     print(f'Книга в библиотеке')
 
@@ -167,51 +171,61 @@ class Library:  # Основной класс приложения
             self.DB.connection.commit()
 
     def return_book(self) -> None:  # Метод возврата книги в библиотеку от пользователя
-        user_id = int(input(f'Какой пользователь возвращает книгу? Введите id'))
-        self.DB.cursor.execute('''SELECT name, id FROM Users_db WHERE id=:id;''', dict(id=user_id))
+        user_id = int(input(f'Какой пользователь возвращает книгу? Введите id'))  # Вопрос юзеру
+        self.DB.cursor.execute('''SELECT name, id FROM Users_db 
+                                        WHERE id=:id;''',
+                               dict(id=user_id))  # выбираем данные (имя, id) пользователя, id которого ввели
 
-        user_data = self.DB.cursor.fetchall()[0]
+        user_data = self.DB.cursor.fetchall()[0]  # выводим эти данные в отедльный список
 
         self.DB.cursor.execute('''SELECT Library_db.id, Library_db.title, Library_db.personal_number 
                                         FROM Library_db
-                                        WHERE user_book_id=:user_id;''', dict(user_id=user_data[1]))
+                                        WHERE user_book_id=:user_id;''',
+                               dict(user_id=user_data[1]))  # выбираем все книги, которые взял пользователь
 
-        user_books = self.DB.cursor.fetchall()
-        user_books_numbers = [book[-1] for book in user_books]
-        return_book_number = int(input(f'Какую книгу возвращает {user_data[0]}? Введите ее уникальный номер\n'))
+        user_books = self.DB.cursor.fetchall()  # выводим эти книги в список
+        user_books_numbers = [book[-1] for book in user_books]  # выводим в отдельный список уникальные номера этих книг
+        return_book_number = int(input(f'Какую книгу возвращает {user_data[0]}? '
+                                       f'Введите ее уникальный номер\n'))
 
+        # если веденного номера нет среди номеров книг, которые у пользователя
         if return_book_number not in user_books_numbers:
             print(f'Пользователь {user_data[0]} не брал такой книги! Введите правильный номер')
-            self.return_book()
+            self.return_book()  # перезапускаем метод
+        # иначе
         else:
-            self.DB.cursor.execute('''UPDATE Library_db SET user_book_id=null WHERE personal_number=:personal_number;''',
-                                   dict(personal_number = return_book_number))
+            # в следующем коде превращаем значение поля Foreign key в null у книги, уникальный номер которой
+            # мы сохранили в return_book_number
+            self.DB.cursor.execute('''UPDATE Library_db SET user_book_id=null 
+                                            WHERE personal_number=:personal_number;''',
+                                   dict(personal_number=return_book_number))  #
             self.DB.connection.commit()
+            # выводим название книги из общего списка книг пользователя в отдельную строку по уникальному номеру книги
             title_return_book = ''.join([book[1] for book in user_books if book[-1] == return_book_number])
             print(f'Пользователь {user_data[0]} вернул книгу <{title_return_book}> в библиотеку! Молодец!')
 
     def checkout_report(self, for_return: bool) -> None:  # Метод создания отчета о книгах на руках
-        self.DB.cursor.execute('''SELECT * FROM Library_db;''')
-        all_books = self.DB.cursor.fetchall()
-        book_on_hands = [book for book in all_books if book[-1] is not None]
-        if not for_return:
+        self.DB.cursor.execute('''SELECT * FROM Library_db;''')  # Выбираем все книги таблицы
+        all_books = self.DB.cursor.fetchall()  # Выводим их в отдельный список
+        book_on_hands = [book for book in all_books if book[-1] is not None]  # список книг, которые на руках
+        if not for_return:  # если данный метод запускается не для книг, которые в библиотеке
             print(f'На руках находится {len(book_on_hands)}/{len(all_books)} книг.')
-        else:
-           print(f'В библиотеке находится книг: {len(all_books) - len(book_on_hands)} шт.')
+        else:  # иначе
+            print(f'В библиотеке находится книг: {len(all_books) - len(book_on_hands)} шт.')
 
     def return_report(self) -> Callable:  # Метод создания отчета о книгах библиотеке
-        return self.checkout_report(for_return = True)
+        return self.checkout_report(for_return=True)  # запускаем предыдущий метод с параметром for_return
 
     def general_report(self) -> None:  # Метод создания общего главного отчета о состоянии библиотеки и пользователях
-        print(self.checkout_report(for_return=True))
-        print(self.checkout_report(for_return=False))
+        print(self.checkout_report(for_return=True))  # Книги в библиотеке
+        print(self.checkout_report(for_return=False))  # Книги на руках
 
-        self.DB.cursor.execute('''SELECT * FROM Users_db;''')
+        self.DB.cursor.execute('''SELECT * FROM Users_db;''')  # Все пользователя библиотеки
         library_users, number_user = self.DB.cursor.fetchall(), 1
         print(f'ПОЛЬЗОВАТЕЛИ:')
         print(f'######################')
         print(f'Список всех пользователей библиотеки:')
-        for user in library_users:
+        for user in library_users:  # Красивый вывод всех пользователей библиотеки
             print(f'{number_user}. Имя: {user[1]}\nПочта: {user[2]}')
             number_user += 1
             print()
@@ -219,18 +233,19 @@ class Library:  # Основной класс приложения
         self.DB.cursor.execute('''SELECT Library_db.id, Library_db.title, Library_db.personal_number, Users_db.name
                                     FROM Library_db
                                     JOIN Users_db ON Users_db.id=Library_db.user_book_id;''')
-        users_book = self.DB.cursor.fetchall()
-
+        users_book = self.DB.cursor.fetchall()  # выше sqlite запрос, а здесь вывод в список пользователей с книгами
+        print(f'user book {users_book}')
         print(f'Список пользователей, которые взяли хотя бы одну книгу.')
         users_book_dict = {val[-1]: [] for val in users_book}
-        for data in users_book:
+        print(users_book_dict)
+        for data in users_book:  # создаем словарь из пользователей и списка книг, которые у них на руках
             if not users_book_dict[data[-1]]:
                 number = 1
             else:
                 number = int(users_book_dict[data[-1]][-1][0]) + 1
             users_book_dict[data[-1]].append(f'{number}.{data[1]}')
 
-        for user, books in users_book_dict.items():
+        for user, books in users_book_dict.items():  # выводим этот словарь
             books = '\n'.join(books)
             print(f'Пользователь {user} взял книги:\n{books}')
             print()
@@ -241,7 +256,7 @@ class Library:  # Основной класс приложения
         self.DB.cursor.execute('''SELECT * FROM Library_db;''')
         all_books = list(map(list, self.DB.cursor.fetchall()))
 
-        for book in all_books:
+        for book in all_books:  # делаем удобночитаемый вывод всех книг, которые есть в библиотеке и на руках
 
             if book[-1]:
                 self.DB.cursor.execute('''SELECT name FROM Users_db WHERE id=:id;''', dict(id=book[-1]))
@@ -250,8 +265,6 @@ class Library:  # Основной класс приложения
                 book_location = f'В библиотеке'
             book[-1] = book_location
             print(' | '.join(list(map(str, book))))
-
-
 
 
 lib = Library()
@@ -284,6 +297,6 @@ def main() -> None:  # Функция запуска словаря лямбда
 
         commands[start_app]()
 
+
 if __name__ == '__main__':
     main()
-

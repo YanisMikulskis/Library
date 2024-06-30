@@ -25,22 +25,12 @@ class Book:
             self.year = [i for i in book_info.split() if len(i) == 4 and i.isdigit()][0]
         except IndexError:
             self.year = 0
-        # self.personal_number = randint(10000, 99999)
-        # self.all_data = [self.title, self.author, self.year, self.is_checked_out, self.personal_number]
         self.book_data = [self.title, self.author, self.year]
-    def __str__(self):
-        return (f'{self.title}\n'
-                f'{self.author}\n'
-                f'{self.year}\n'
-                f'{self.is_checked_out}\n'
-                f'{self.personal_number}')
 
 def make_books(quantity):
-    all_book_dates = []
+    all_book_data = []
     book = Book()
     for i in range(quantity):
         book.generic_data()
-        print(book.book_data)
-        all_book_dates.append(book.book_data)
-    print(f'all book datessss {all_book_dates}')
-    return all_book_dates
+        all_book_data.append(book.book_data)
+    return all_book_data
