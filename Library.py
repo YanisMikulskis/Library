@@ -113,7 +113,7 @@ class Library:  # Основной класс приложения
 
             def exam_book() -> Union[tuple, str]:
                 """
-                Функция вывода пользователей, если они брали книгу, иначе - сообщение о том, что книга в библиотеке
+                Функция вывода пользователя, если они брали книгу, иначе - сообщение о том, что книга в библиотеке
                 """
                 if book[6]:
                     self.DB.cursor.execute('''SELECT Users_db.id, Users_db.name, Users_db.email
@@ -155,7 +155,7 @@ class Library:  # Основной класс приложения
         self.DB.cursor.execute('''SELECT name FROM users_db WHERE id=:id;''', dict(id=user_id))
         name_user = self.DB.cursor.fetchall()[0][0]
         personal_number = int(input(f'Какую книгу вы хотите выдать пользователю {name_user}? '
-                                    f'Введите персональный номер книги\n'))
+                                    f'Введите уникальный номер книги\n'))
         self.DB.cursor.execute('''SELECT user_book_id FROM Library_db WHERE personal_number=:personal_number;''',
                                dict(personal_number=personal_number))
 
@@ -176,7 +176,7 @@ class Library:  # Основной класс приложения
                                         WHERE id=:id;''',
                                dict(id=user_id))  # выбираем данные (имя, id) пользователя, id которого ввели
 
-        user_data = self.DB.cursor.fetchall()[0]  # выводим эти данные в отедльный список
+        user_data = self.DB.cursor.fetchall()[0]  # выводим эти данные в отдельный список
 
         self.DB.cursor.execute('''SELECT Library_db.id, Library_db.title, Library_db.personal_number 
                                         FROM Library_db
