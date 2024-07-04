@@ -1,12 +1,23 @@
+import sqlite3
+
 from flask import Flask
 from flask import render_template
 from flask import request
 from flask import jsonify
 from flask_sqlalchemy import SQLAlchemy
 app = Flask(__name__)
+
+def connect_db():
+    connection = sqlite3.connect('Library_FLASK_DB')
+    connection.row_factory = sqlite3.Row
+    return connection
 @app.route('/')
 def hello_library():
-    return f'Hello, Library!'
+    connection = connect_db()
+    cursor = connection.cursor()
+    cursor.execute('''SELECT * FROM Library_table_flask;''')
+    books = dict(cursor.fetchall())
+    return f'Hello, Library!\n this is {books}'
 
 
 
