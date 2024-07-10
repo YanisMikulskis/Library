@@ -4,27 +4,53 @@ from flask import Flask
 from flask import render_template
 from flask import request
 from flask import jsonify
-from flask_sqlalchemy import SQLAlchemy
+
+# from sqlalchemy import create_engine, Column, Integer, String,Boolean, select, MetaData, ForeignKey
+# from sqlalchemy.inspection import inspect
+# from sqlalchemy.orm import DeclarativeBase, sessionmaker, relationship
+
+from createDB import *
 app = Flask(__name__)
-
-def connect_db():
-    connection = sqlite3.connect('Library_FLASK_DB')
-    connection.row_factory = sqlite3.Row
-    return connection
 @app.route('/')
-def hello_library():
-    connection = connect_db()
-    cursor = connection.cursor()
-    cursor.execute('''SELECT * FROM Library_table_flask;''')
-    books = dict(cursor.fetchall())
-    return f'Hello, Library!\n this is {books}'
+def book():
+    return f'{user_have_books}'
+
+@app.route('/home')
+def home():
+    return render_template('hello.html')
+#
+# def connect_db():
+#     connection = sqlite3.connect('Library_FLASK_DB')
+#     connection.row_factory = sqlite3.Row
+#     return connection
+# @app.route('/')
+# def hello_library():
+#     # connection = connect_db()
+#     # cursor = connection.cursor()
+#     # cursor.execute('''SELECT * FROM Library_table_flask;''')
+#     # books = '\n'.join(list(map(str, list(map(dict, cursor.fetchall())))))
+#     #
+#     # print(books)
+#
+#     return f'Hello, Library!'
+#
+#
+# @app.errorhandler(404)
+# def error404(error):
+#     return render_template('error404.html')
+#
+# @app.route('/home')
+# def home():
+#     return render_template('reg.html')
+#
+#
+#
+#
+# if __name__ == '__main__':
+#     app.run(debug=True)
 
 
 
-
-
-if __name__ == '__main__':
-    app.run(debug=True)
 # @app.route('/')
 # def hello_world():
 #     return 'Hello, world'
@@ -90,8 +116,8 @@ if __name__ == '__main__':
 # db.session.add(new_user)
 # db.session.commit()
 #
-# if __name__ == '__main__':
-#     app.run(debug=True)
+if __name__ == '__main__':
+    app.run(debug=True)
 
 
 
