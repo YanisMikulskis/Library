@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns="http://www.w3.org/1999/html" xmlns="http://www.w3.org/1999/html">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Сворачиваемый список</title>
+<link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
+<style>
+  #sidebar {
+    min-width: 400px;
+    max-width: 400px;
+    min-height: 2000px;
+    background: #f7f7f7;
+    transition: all 0.3s;
+  }
+  #sidebar.active {
+    margin-left: -250px;
+    background: #ffb866;
+  }
+  #content {
+    width: 100%;
+    padding: 20px;
+    transition: all 0.3s;
+  }
+
+  #backbutton{
+    width: 10%;
+    padding: 5px;
+    transition: all 0.5s;
+    background: #007bff;
+  }
+  #lettering {
+    margin-left: 30px;
+  }
+
+
+
+</style>
+</head>
+<body>
+
+<div class="wrapper">
+  <!-- Sidebar -->
+  <nav id="sidebar">
+    <div class="sidebar-header">
+      <h3>Книги в библиотеке</h3>
+    </div>
+
+    <ul class="list-unstyled components">
+      <p>Список книг, которые ждут своего читателя</p>
+        {% for k, book in books_dict.items() %}
+
+          {% for line in book %}
+      <p>
+        <li>{{ line.title }}</li>
+         <li> Автор: {{ line.author }}</li>
+        <li> Год написания: {{ line.year }}</li>
+        <li> Уникальный номер: {{ line.personal_number }}</li>
+        <li>Количество: {{ line.count }}</li>
+
+          {% endfor %}
+      </p>
+
+
+        {% endfor %}
+
+
+<!--      -->
+  <!-- Back button -->
+      <a href="{{ url_for('menu') }}" class="button">Назад</a>
+  </div>
+
+
+</body>
+</html>

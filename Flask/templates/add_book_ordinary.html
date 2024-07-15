@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+	<meta charset="UTF-8">
+		<title>Добавление новой книги</title>
+	</head>
+	<body>
+			<h1>Введите данные книги, которую хотите добавить</h1>
+	<form method="POST" action="/add_book">
+		<input type="text" name="title_book" placeholder="Название книги" required>
+		<input type="text" name="author_book" placeholder="Автор книги" required>
+		<input type="text" name="year_book" placeholder="Год написания" required>
+		<button type="submit">Отправить</button>
+	</form>
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        {% for message in messages %}
+            <p>{{ message }}</p>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+	<a href="{{ url_for('menu') }}" class="button">Вернуться в меню</a>
+  </body>
+</html>
