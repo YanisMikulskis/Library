@@ -1,6 +1,7 @@
 import functools
 import sqlite3
 
+import werkzeug.exceptions
 from flask import Flask
 from flask import render_template
 from flask import redirect
@@ -22,7 +23,7 @@ app.secret_key = 'my_library'
 @app.route('/')
 def book():
     print('запущено')
-    return f'{user_have_books}'
+    return f'запущено'
 
 
 @app.route('/home')
@@ -78,7 +79,71 @@ def add_book():
 
 @app.route('/remove_book', methods = ['POST', 'GET'])
 def remove_book():
+    if request.method == 'POST':
+        # тут мы отлавливаем ошибку werkzeug.exceptions.BadRequestKeyError
+        # эта ошибка связана с отсутствием формы в шаблоне. Такая ситуация происходит с формой ввода ОДНОГО id тогда и только
+        # тогда (в данном случае) когда мы нажимаем кнопку all (т.е. хотим ввести НЕСКОЛЬКО id для удаления книг, а не одно). Также происходит и наоборот
+        # В шаблоне на JS я реализовал механизм нахождения на странице только одной формы, тобиш если мы хотим удалить
+        # одну книгу, то появляется соответствующая форма, а форма для ввода нескольких id исчезает (и наоборот)
+        try:
+            one_book_id_from_form = request.form['one_book_remove']
+            some_book_id_from_form = None
+        except werkzeug.exceptions.BadRequestKeyError:
+            one_book_id_from_form = None
+            some_book_id_from_form = request.form['some_book_remove']
 
+        if one_book_id_from_form:
+            remove_book = (db_session.query(Library_Flask).
+                           filter(Library_Flask.id == one_book_id_from_form).first())
+            if remove_book is None:
+                flash('Нет книги с таким id')
+            else:
+                db_session.delete(remove_book)
+                db_session.commit()
+                flash('Книга удалена!')
+        else:
+            form_list_data = some_book_id_from_form.split(',')
+            form_list_data = [''.join([s for s in num if s.isdigit()]) for num in form_list_data]#введенные id приведенные к норм виду
+            all_id = list(map(lambda i: str(i[0]), db_session.query(Library_Flask.id).all())) #все id таблицы
+            id_check = []
+            for i in form_list_data:
+                id_check.append(True) if i in all_id else id_check.append(False)
+
+            if not all(id_check):
+                flash('Один или несколько введенных id нет в таблице книг!')
+            else:
+                for book_id in form_list_data:
+                    remove_book = (db_session.query(Library_Flask).
+                                   filter(Library_Flask.id == book_id).first())
+                    db_session.delete(remove_book)
+                    db_session.commit()
+                flash('Книги удалены!')
+    return render_template('remove_book_ordinary.html')
+@app.route('/search_book', methods = ['POST', 'GET'])
+def search_book():
+    found_book = {
+    }
+    if request.method == 'POST':
+        result_search = request.form['search_book']
+        result_book = db_session.query(Library_Flask).filter(Library_Flask.id==result_search).first()
+        if result_book is not None:
+            if 'Результат' not in found_book:
+                found_book.setdefault(f'Результат', [])
+            data_book = {'Уникальный номер книги': result_book.personal_number,
+                         'Название': result_book.title,
+                         'Автор': result_book.author,
+                         'Год написания': result_book.year}
+            for explanation, data in data_book.items():
+                flash(f'{explanation}: {data}')
+        else:
+            flash(f'Нет книги с таким id!')
+    return render_template('search_book.html', found_book=found_book)
+
+
+@app.route(f'/new_reader', methods = ['POST', 'GET'])
+def new_reader():
+
+    return render_template()
 
 @app.route('/books_in_library')
 def books_in_library():

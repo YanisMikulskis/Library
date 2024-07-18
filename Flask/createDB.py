@@ -50,10 +50,10 @@ book_in_library = db_session.query(Library_Flask).filter(Library_Flask.user_book
 #Какие книги находятся у Виктории?
 book_vik = db_session.query(User_Flask).filter(User_Flask.name=='Виктория').first().books
 #Выдадим Виктории книгу Стивена Кинга
-book_vik_add = db_session.query(User_Flask).filter(User_Flask.name=='Виктория').first() #Виктория
-King = db_session.query(Library_Flask).filter(Library_Flask.author=='Стивен Кинг').first() #Кинг
-book_vik_add.books.extend([King]) if King.user_book_id is None else ...#Выдаем
-db_session.commit() #Сохраняем изменения в БД
+# book_vik_add = db_session.query(User_Flask).filter(User_Flask.name=='Виктория').first() #Виктория
+# King = db_session.query(Library_Flask).filter(Library_Flask.author=='Стивен Кинг').first() #Кинг
+# book_vik_add.books.extend([King]) if King.user_book_id is None else ...#Выдаем
+# db_session.commit() #Сохраняем изменения в БД
 
 
 #Какие книги в библиотеке?
@@ -93,7 +93,9 @@ lines_title = db_session.query(func.count(Library_Flask.id).filter(Library_Flask
 #порядковый номер последнего элемента
 last_number = db_session.query(Library_Flask).order_by(Library_Flask.personal_number.desc()).first().personal_number
 
-print(f'last_number {last_number}')
+bookkk = db_session.query(Library_Flask).filter(Library_Flask.id==-1).first()
+#выбор всех id и приведение их к нормальному виду
+all_id = list(map(lambda id_book: str(list(id_book)[0]), db_session.query(Library_Flask.id).all()))
 
 
 # books = db_session.query(Library_Flask).all()

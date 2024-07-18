@@ -91,7 +91,7 @@ class Library:  # Основной класс приложения
             all_data = [title, author, year, 1, personal_number]
             query_insert(data=all_data)
         elif choice == 3:  # команда возврата к командам
-            main()
+            main(False)
 
         else:  # иначе перезапускаем данный метод
             print(f'Ошибка! введите 1,2 или 3')

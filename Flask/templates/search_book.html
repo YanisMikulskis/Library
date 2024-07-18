@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+	<meta charset="UTF-8">
+		<title>Поиск книги</title>
+	</head>
+	<body>
+			<h2>Введите id книги, которую нужно найти</h2>
+			<h3>Какую книгу нужно найти?</h3>
+
+
+<!--<p>{{ quantity }}</p>-->
+<style>
+	#input_many_book, #input_one_book {
+  display: none;
+  animation-duration: 1.5s;
+  animation-fill-mode: both;
+  animation-name: fadeIn;
+
+}
+
+/*#input_many_book.open, #input_one_book.open {*/
+/*  display: block;*/
+
+/*}*/
+
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+</style>
+
+
+
+<!--<div id="input_many_book">-->
+<!--  <form role="form" autocomplete="off" method="POST">-->
+<!--	  <label>Введите количество книг, которые нужно удалить</label>-->
+<!--    <input type="text" name="nameReq">-->
+<!--</form>-->
+<!--</div>-->
+
+<div id="search_book">
+	<form method="POST" role="form" autocomplete="off" action="/search_book">
+		<input type="text" name="search_book" placeholder="Введите id">
+		<button type="submit">Найти</button>
+	</form>
+</div>
+            {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        {% for message in messages %}
+            <p>{{ message }}</p>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+<a href="{{ url_for('menu') }}" bottclass="button">Вернуться в меню</a>
+
+<!--  <script>-->
+<!--	  	const button = document.getElementById("one_book");-->
+<!--		const button2 = document.getElementById("many_book")-->
+
+<!--		// const paragraph = document.querySelector("p");-->
+
+<!--		const form_many_book = document.getElementById("input_many_book")-->
+<!--		const form_one_book = document.getElementById("input_one_book")-->
+
+<!--		button.addEventListener("click", updateButtonOne);-->
+<!--		button2.addEventListener("click", updateButtonMany);-->
+<!--		form_many_book.addEventListener("click", updateButtonMany);-->
+<!--		form_one_book.addEventListener('click', updateButtonOne)-->
+<!--		function updateButtonOne() {-->
+<!--			// paragraph.textContent = 1;-->
+<!--			form_one_book.setAttribute('style', 'display: block;');-->
+<!--            form_many_book.setAttribute('style', 'display: none;');-->
+<!--		}-->
+
+<!--		function updateButtonMany() {-->
+<!--			// paragraph.textContent = 0;-->
+<!--			form_many_book.setAttribute('style', 'display: block;');-->
+<!--			form_one_book.setAttribute('style', 'display: none;');-->
+<!--		}-->
+
+
+<!--  </script>-->
+	</body>
+</html>
