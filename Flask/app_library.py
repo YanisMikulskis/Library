@@ -9,6 +9,7 @@ from flask import url_for
 from flask import request
 from flask import jsonify
 from flask import flash
+import re
 
 # from sqlalchemy import create_engine, Column, Integer, String,Boolean, select, MetaData, ForeignKey
 # from sqlalchemy.inspection import inspect
@@ -23,7 +24,7 @@ app.secret_key = 'my_library'
 @app.route('/')
 def book():
     print('запущено')
-    return f'запущено'
+    return render_template('menu.html')
 
 
 @app.route('/home')
@@ -142,8 +143,65 @@ def search_book():
 
 @app.route(f'/new_reader', methods = ['POST', 'GET'])
 def new_reader():
+    if request.method == 'POST':
+        name_reader = request.form['name_reader']
+        email_reader = request.form['email_reader']
+        email_domain = re.findall(r'@+\S+', email_reader)[0]
+        domains = ['@mail.ru', '@gmail.com', '@rambler.ru', '@yahoo.com', '@yandex.ru']
+        if email_domain in domains:
+            new_reader = User_Flask(name=name_reader,
+                                    email=email_reader)
+            db_session.add_all([new_reader])
+            db_session.commit()
+            flash(f'Читатель зарегистрирован')
+        else:
+            flash(f'Неправильный ввод почты!')
+    return render_template('new_reader.html')
 
-    return render_template()
+@app.route('/checkout_book', methods=['POST', 'GET'])
+def checkout_book():
+    if request.method == 'POST':
+        select_reader_id = request.form['id_reader']
+        select_book_number = request.form['number_book']
+        reader = (db_session.query(User_Flask).
+                  filter(User_Flask.id==select_reader_id).first())
+        book = (db_session.query(Library_Flask).
+                filter(Library_Flask.personal_number==select_book_number).first())
+        if reader and book:
+            if book.user_book_id is None:
+                reader.books.extend([book])
+                db_session.commit()
+                flash(f'Книга выдана пользователю {reader.name}')
+            else:
+                flash(f'Эта книга уже на руках!')
+        else:
+            flash(f'Пользователя и/или книги с такими данными не найдено!')
+    return render_template('checkout_book.html')
+
+@app.route('/return_book', methods = ['POST', 'GET'])
+def return_book():
+    if request.method == 'POST':
+        input_reader_id = request.form['id_reader']
+        input_book_number = request.form['number_return_book']
+
+        reader = (db_session.query(User_Flask).
+                  filter(User_Flask.id==input_reader_id).first())
+
+        book = (db_session.query(Library_Flask).
+                filter(Library_Flask.personal_number==input_book_number).first())
+
+        if reader and book:
+            if book.user_book_id is not None:
+                book.user_book_id = None
+                db_session.commit()
+                flash(f'Книга {book.title} возвращена в библиотеку читателем {reader.name}!')
+            else:
+                flash(f'Эта книга уже в библиотеке!')
+        else:
+            flash(f'Пользователя и/или книги с такими данными не найдено!')
+    return render_template('return_book.html')
+
+
 
 @app.route('/books_in_library')
 def books_in_library():
@@ -166,6 +224,11 @@ def books_in_library():
     print(books_dict)
 
     return render_template('books_in_library.html', books_dict=books_dict)
+
+
+@app.route('/book_on_hand')
+def book_on_hand():
+    ret
 
 
 # def connect_db():

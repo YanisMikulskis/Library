@@ -71,13 +71,13 @@
         <ul class="collapse list-unstyled" id="readerSubmenu">
 
           <li>
-            <a href="#" id="lettering">Зарегистрировать нового читателя</a>
+            <a href="{{ url_for('new_reader') }}" id="lettering">Зарегистрировать нового читателя</a>
           </li>
           <li>
-            <a href="#" id="lettering">Выдать книгу читателю</a>
+            <a href="{{ url_for('checkout_book') }}" id="lettering">Выдать книгу читателю</a>
           </li>
           <li>
-            <a href="#" id="lettering">Вернуть книгу от читателя</a>
+            <a href="{{ url_for('return_book') }}" id="lettering">Вернуть книгу от читателя</a>
           </li>
         </ul>
       </li>
