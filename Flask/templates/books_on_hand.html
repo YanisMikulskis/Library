@@ -12,12 +12,12 @@
 		{% for book in book_hand %}
 			<li>Название: {{ book.title }}</li>
 			<li>Номер: {{ book.personal_number }}</li>
-			<li>Автор: {{ book.author }}</li>
-			<li>Год написания: {{ book.year }}</li>
-			<li>Количество: {{ book.count }}</li>
+			<li>Читатель: {{ book.reader }}</li>
+			<li>Почта читателя: {{ book.email_reader }}</li>
 			<br>
 		{% endfor %}
 	{% endfor %}
+
 
 
 

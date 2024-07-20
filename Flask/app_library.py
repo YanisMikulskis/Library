@@ -203,34 +203,77 @@ def return_book():
 
 
 
+
+
+
+@app.route('/books_on_hand')
+def books_on_hand():
+    books_dict = {
+    f'Книги на руках и читатели':[]
+    }
+
+    books_sorted = (db_session.query(Library_Flask).
+                    filter(Library_Flask.user_book_id != None).
+                    order_by(Library_Flask.title).all()) # сортировка всех книг на руках по названию
+
+    for book in books_sorted:
+        name_reader = db_session.query(User_Flask).filter(User_Flask.id == book.user_book_id).first().name
+        email_reader = db_session.query(User_Flask).filter(User_Flask.id == book.user_book_id).first().email
+        book_data = {
+            'title': book.title,
+            'personal_number': book.personal_number,
+            'reader': name_reader,
+            'email_reader': email_reader
+        }
+        books_dict[f'Книги на руках и читатели'].append(book_data)
+
+
+    return render_template('books_on_hand.html', books_dict=books_dict)
+
 @app.route('/books_in_library')
 def books_in_library():
+    books_sorted = (db_session.query(Library_Flask).
+                    filter(Library_Flask.user_book_id == None).
+                    order_by(Library_Flask.title).all())
+
+
     all_books = db_session.query(Library_Flask).filter(Library_Flask.user_book_id == None).all()
     books = [book for book in all_books]
+    books_titles = list(sorted([book.title for book in books], key=lambda x:x[0]))
+    print(f'titlllls {books_titles}')
+
+
     books_dict = {
         'Общая база книг в библиотеке': []
     }
 
-    for book in books:
+    for book_title in books_sorted:
+        weaving_book = db_session.query(Library_Flask).filter(Library_Flask.id==book_title.id).first()
         dict_book = {
-            'personal_number': book.personal_number,
-            'title': book.title,
-            'author': book.author,
-            'year': book.year,
-            'count': db_session.query(func.count(Library_Flask.id).filter(Library_Flask.title == book.title)).scalar()
+            'personal_number': weaving_book.personal_number,
+            'title': book_title,
+            'author': weaving_book.author,
+            'year': weaving_book.year,
+            'count': db_session.query(func.count(Library_Flask.id).filter(Library_Flask.title == book_title)).scalar()
         }
         books_dict['Общая база книг в библиотеке'].append(dict_book)
 
-    print(books_dict)
+
 
     return render_template('books_in_library.html', books_dict=books_dict)
 
-
-@app.route('/book_on_hand')
-def book_on_hand():
-    ret
-
-
+@app.route('/general_report')
+def general_report():
+    count_books = db_session.query(func.count(Library_Flask.id)).scalar()
+    print(count_books) #Общее количество книг в библиотеке
+    books_in_library()
+    #Общий список книг
+    #Количество на руках
+    # Количество в библиотеке
+    # Количество читателей
+    # Список читателей (всех)
+    # Список читателей которые взяли хотя бы одну книгу
+    return render_template('general_report.html')
 # def connect_db():
 #     connection = sqlite3.connect('Library_FLASK_DB')
 #     connection.row_factory = sqlite3.Row

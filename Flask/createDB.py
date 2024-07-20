@@ -72,8 +72,8 @@ not_books = db_session.query(Library_Flask).filter(Library_Flask.user_book_id==N
 
 
 #добавить кингу в библиотеку
-last_number = db_session.query(Library_Flask).order_by(Library_Flask.id.desc()).all()[1].personal_number
-
+last_number = db_session.query(Library_Flask).order_by(Library_Flask.id.desc()).all()[0].personal_number
+print(last_number)
 # выше обратная сортировка таблицы(order_by(Library_Flask.id.desc())), вывод списка всех результатов, дальше индекс а потом атрибут
 
 test_book = Library_Flask(title='title test',
