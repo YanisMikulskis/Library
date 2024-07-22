@@ -98,6 +98,9 @@ bookkk = db_session.query(Library_Flask).filter(Library_Flask.id==-1).first()
 all_id = list(map(lambda id_book: str(list(id_book)[0]), db_session.query(Library_Flask.id).all()))
 
 
+
+book_on_hand = db_session.query(Library_Flask).filter(Library_Flask.personal_number==58900).first()
+print(book_on_hand)
 # books = db_session.query(Library_Flask).all()
 #
 # users = db_sessionquery(User_Flask).all()

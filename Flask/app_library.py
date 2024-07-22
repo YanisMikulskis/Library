@@ -133,7 +133,11 @@ def search_book():
             data_book = {'Уникальный номер книги': result_book.personal_number,
                          'Название': result_book.title,
                          'Автор': result_book.author,
-                         'Год написания': result_book.year}
+                         'Год написания': result_book.year,
+                         'Наличие книги': f'В библиотеке' if result_book.user_book_id is None
+                                        else f'Книга у читателя:{db_session.query(User_Flask).filter(User_Flask.id==result_book.user_book_id).first().name}'
+                         }
+
             for explanation, data in data_book.items():
                 flash(f'{explanation}: {data}')
         else:
@@ -205,6 +209,11 @@ def return_book():
 
 
 
+def books_sorted_func(hand:bool) -> list:
+    books_sorted = (db_session.query(Library_Flask).
+                    filter(Library_Flask.user_book_id != None if hand else Library_Flask.user_book_id == None).
+                    order_by(Library_Flask.title).all())
+    return books_sorted
 
 @app.route('/books_on_hand')
 def books_on_hand():
@@ -212,10 +221,7 @@ def books_on_hand():
     f'Книги на руках и читатели':[]
     }
 
-    books_sorted = (db_session.query(Library_Flask).
-                    filter(Library_Flask.user_book_id != None).
-                    order_by(Library_Flask.title).all()) # сортировка всех книг на руках по названию
-
+    books_sorted = books_sorted_func(hand=True)
     for book in books_sorted:
         name_reader = db_session.query(User_Flask).filter(User_Flask.id == book.user_book_id).first().name
         email_reader = db_session.query(User_Flask).filter(User_Flask.id == book.user_book_id).first().email
@@ -232,29 +238,19 @@ def books_on_hand():
 
 @app.route('/books_in_library')
 def books_in_library():
-    books_sorted = (db_session.query(Library_Flask).
-                    filter(Library_Flask.user_book_id == None).
-                    order_by(Library_Flask.title).all())
 
-
-    all_books = db_session.query(Library_Flask).filter(Library_Flask.user_book_id == None).all()
-    books = [book for book in all_books]
-    books_titles = list(sorted([book.title for book in books], key=lambda x:x[0]))
-    print(f'titlllls {books_titles}')
-
-
+    books_sorted = books_sorted_func(hand=False)
     books_dict = {
         'Общая база книг в библиотеке': []
     }
 
-    for book_title in books_sorted:
-        weaving_book = db_session.query(Library_Flask).filter(Library_Flask.id==book_title.id).first()
+    for book in books_sorted:
         dict_book = {
-            'personal_number': weaving_book.personal_number,
-            'title': book_title,
-            'author': weaving_book.author,
-            'year': weaving_book.year,
-            'count': db_session.query(func.count(Library_Flask.id).filter(Library_Flask.title == book_title)).scalar()
+            'personal_number': book.personal_number,
+            'title': book.title,
+            'author': book.author,
+            'year': book.year,
+            'count': db_session.query(func.count(Library_Flask.id).filter(Library_Flask.title == book.title)).scalar()
         }
         books_dict['Общая база книг в библиотеке'].append(dict_book)
 
@@ -265,15 +261,70 @@ def books_in_library():
 @app.route('/general_report')
 def general_report():
     count_books = db_session.query(func.count(Library_Flask.id)).scalar()
-    print(count_books) #Общее количество книг в библиотеке
-    books_in_library()
-    #Общий список книг
-    #Количество на руках
-    # Количество в библиотеке
-    # Количество читателей
+    flash(f'Общее количество книг, учтенных в библиотеке: {count_books} шт') #!
+     #Общее количество книг в библиотеке
+
+    all_books = db_session.query(Library_Flask).all()
+    titles_book = list(set(sorted([book.title for book in all_books])))
+
+    all_books_dict = { #!
+        f'Список всех книг:': []
+    }
+
+
+    for book in all_books:
+        book_dict = {
+            'title': book.title,
+            'author': book.author,
+            'year': book.year,
+            'universal_number': book.personal_number,
+            'count': db_session.query(func.count(Library_Flask.id).filter(Library_Flask.title==book.title)).scalar(),
+            'hand': f'В библиотеке' if book.user_book_id is None else
+                    f'Книга у читателя:{db_session.query(User_Flask).filter(User_Flask.id==book.user_book_id).first().name}'
+
+        }
+
+        all_books_dict[f'Список всех книг:'].append(book_dict)
+
+
+
+
+
+    hand_books = len(books_sorted_func(hand=True))#Количество на руках #1
+
+    library_books = len(books_sorted_func(hand=True))# Количество в библиотеке #1
+
+
+    readers_count = db_session.query(func.count(User_Flask.id)).scalar()# Количество читателей #1
+
+    readers = db_session.query(User_Flask).all()
+    all_readers = {
+        'Читатели:': [] #1
+    }
+    for reader in readers:
+        reader_dict = {
+            'Имя': reader.name,
+            'Почта': reader.email,
+            'Взято книг': len(reader.books)
+
+        }
+        all_readers['Читатели:'].append(reader_dict)
+
+
+    print(f'Читатели {all_readers}')
     # Список читателей (всех)
-    # Список читателей которые взяли хотя бы одну книгу
-    return render_template('general_report.html')
+
+    readers_active = db_session.query(User_Flask).filter(User_Flask.books != None).all() # Список читателей которые взяли хотя бы одну книгу #!
+    flash(f'{[reader.name for reader in readers_active]}')
+
+    return render_template('general_report.html',
+                           count_books = count_books,
+                           all_books_dict=all_books_dict,
+                           hand_books=hand_books,
+                           library_books=library_books,
+                           readers_count=readers_count,
+                           all_readers=all_readers,
+                           readers_active=readers_active)
 # def connect_db():
 #     connection = sqlite3.connect('Library_FLASK_DB')
 #     connection.row_factory = sqlite3.Row
