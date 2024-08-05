@@ -40,6 +40,9 @@ def error404(error):
     return render_template('error404.html')
 
 
+
+def user_active(username):
+    return username
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
@@ -49,12 +52,29 @@ def login():
         password = db_session.query(User_Flask).filter(User_Flask.email==email_form).first().password
         if password is not None:
             if hashlib.sha256(password_form.encode('utf-8')).hexdigest() == password:
-                return render_template('hello.html', username=username, password=password)
+                return render_template('hello.html', username=username, email=email_form)
             else:
                 flash(f'Неправильный пароль!')
         else:
-            return error404(404)
+            if username:
+                return render_template('hello.html', username=username, email=email_form)
+            else:
+                flash(f'Нет такого пользователя!')
     return render_template('login.html')
+
+@app.route('/my_book')
+def my_book():
+    email = request.args.get('email')
+    book_username = db_session.query(User_Flask).filter(User_Flask.email==email).first().books
+    if not book_username:
+        message_not_books = f'Вам пока не выдавали книги! Приходите в библиотеку'
+        return render_template('my_book.html', message_not_books = message_not_books)
+    else:
+
+        return render_template('my_book.html', book_username=book_username, email=email)
+
+
+
 
 
 @app.route('/menu')
@@ -158,11 +178,14 @@ def search_book():
 def new_reader():
     if request.method == 'POST':
         name_reader = request.form['name_reader']
+
         email_reader = request.form['email_reader']
         email_domain = re.findall(r'@+\S+', email_reader)[0]
         domains = ['@mail.ru', '@gmail.com', '@rambler.ru', '@yahoo.com', '@yandex.ru']
+
         password_reader = request.form['password_reader']
-        hashed_password = hashlib.sha256(password_reader.encode('utf-8')).hexdigest()
+        hashed_password = None if not password_reader else hashlib.sha256(password_reader.encode('utf-8')).hexdigest()
+
         if email_domain in domains:
             new_reader = User_Flask(name=name_reader,
                                     email=email_reader,

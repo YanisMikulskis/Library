@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+	<meta charset="UTF-8">
+		<h4>Список книг, которые у вас на руках!</h4>
+
+	</head
+	<body>
+
+    {% if message_not_books %}
+          <h4>{{ message_not_books }}</h4>
+
+    {% else %}
+          <h3>Список в алфавитном порядке</h3>
+              {% for book in book_username %}
+                  <li><h4>{{ book.title }}</h4></li>
+                  <li>Автор: {{ book.author }}</li>
+                  <li>Год написания: {{ book.year }}</li>
+                  <li>Универсальный номер: {{ book.universal_number }}</li>
+                  <li>Количество: {{ book.count }} шт</li>
+                  <li>Местонахождение: {{ book.hand }}</li>
+                  <br>
+              {% endfor %}
+
+    {% endif %}
+
+
+
+	<a href="{{ url_for('menu') }}" class="button">Вернуться в меню</a>
+  </body>
+</html>
