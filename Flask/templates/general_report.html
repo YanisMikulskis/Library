@@ -19,9 +19,23 @@
 					<br>
 				{% endfor %}
 			{% endfor %}
-
-
-
+			<hr>
+			<hr>
+			<h4>Количество книг на руках: {{ hand_books }} шт</h4>
+			<h4>Количество книг в библиотеке: {{ library_books }} шт</h4>
+			<h4>Читателей зарегистрировано: {{ readers_count }} чел</h4>
+			{% for key, reader in all_readers.items() %}
+				{% for element in reader %}
+					<h4>{{ element.name }}</h4>
+					<li>Почта: {{ element.email }}</li>
+					<li>Взято книг: {{ element.books }}</li>
+					<h4>##################</h4>
+				{% endfor %}
+			{% endfor %}
+			<h4>Активные читатели</h4>
+			{% for name_reader in readers_active %}
+				<li>{{ name_reader }}</li>
+			{% endfor %}
 			{% with messages = get_flashed_messages() %}
       {% if messages %}
         {% for message in messages %}

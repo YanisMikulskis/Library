@@ -2,6 +2,7 @@ import functools
 import sqlite3
 
 import werkzeug.exceptions
+import hashlib
 from flask import Flask
 from flask import render_template
 from flask import redirect
@@ -24,7 +25,9 @@ app.secret_key = 'my_library'
 @app.route('/')
 def book():
     print('запущено')
-    return render_template('menu.html')
+    return render_template('start_page.html')
+
+
 
 
 @app.route('/home')
@@ -40,10 +43,15 @@ def error404(error):
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        username = request.form['username']
-        password = request.form['password']
-        if username:
-            return redirect(url_for('home'))
+        email_form = request.form['email']
+        password_form = request.form['password']
+        username = db_session.query(User_Flask).filter(User_Flask.email==email_form).first().name
+        password = db_session.query(User_Flask).filter(User_Flask.email==email_form).first().password
+        if password is not None:
+            if hashlib.sha256(password_form.encode('utf-8')).hexdigest() == password:
+                return render_template('hello.html', username=username, password=password)
+            else:
+                flash(f'Неправильный пароль!')
         else:
             return error404(404)
     return render_template('login.html')
@@ -74,6 +82,7 @@ def add_book():
         if all(data_book):
             db_session.add_all([new_book])
             db_session.commit()
+
     else:
         flash(message='Введите данные')
     return render_template('add_book_ordinary.html')
@@ -152,9 +161,12 @@ def new_reader():
         email_reader = request.form['email_reader']
         email_domain = re.findall(r'@+\S+', email_reader)[0]
         domains = ['@mail.ru', '@gmail.com', '@rambler.ru', '@yahoo.com', '@yandex.ru']
+        password_reader = request.form['password_reader']
+        hashed_password = hashlib.sha256(password_reader.encode('utf-8')).hexdigest()
         if email_domain in domains:
             new_reader = User_Flask(name=name_reader,
-                                    email=email_reader)
+                                    email=email_reader,
+                                    password = hashed_password)
             db_session.add_all([new_reader])
             db_session.commit()
             flash(f'Читатель зарегистрирован')
@@ -261,18 +273,14 @@ def books_in_library():
 @app.route('/general_report')
 def general_report():
     count_books = db_session.query(func.count(Library_Flask.id)).scalar()
-    flash(f'Общее количество книг, учтенных в библиотеке: {count_books} шт') #!
      #Общее количество книг в библиотеке
 
-    all_books = db_session.query(Library_Flask).all()
-    titles_book = list(set(sorted([book.title for book in all_books])))
-
+    all_books_sorted = db_session.query(Library_Flask).order_by(Library_Flask.title).all()
     all_books_dict = { #!
         f'Список всех книг:': []
     }
 
-
-    for book in all_books:
+    for book in all_books_sorted:
         book_dict = {
             'title': book.title,
             'author': book.author,
@@ -283,39 +291,31 @@ def general_report():
                     f'Книга у читателя:{db_session.query(User_Flask).filter(User_Flask.id==book.user_book_id).first().name}'
 
         }
-
         all_books_dict[f'Список всех книг:'].append(book_dict)
 
-
-
-
-
     hand_books = len(books_sorted_func(hand=True))#Количество на руках #1
-
-    library_books = len(books_sorted_func(hand=True))# Количество в библиотеке #1
-
+    library_books = len(books_sorted_func(hand=False))# Количество в библиотеке #1
 
     readers_count = db_session.query(func.count(User_Flask.id)).scalar()# Количество читателей #1
-
     readers = db_session.query(User_Flask).all()
+    #-----------------
     all_readers = {
-        'Читатели:': [] #1
+        'Читатели:': []
     }
+
     for reader in readers:
         reader_dict = {
-            'Имя': reader.name,
-            'Почта': reader.email,
-            'Взято книг': len(reader.books)
-
+            'name': reader.name,
+            'email': reader.email,
+            'books': len(reader.books)
         }
         all_readers['Читатели:'].append(reader_dict)
 
-
-    print(f'Читатели {all_readers}')
+    # -----------------
     # Список читателей (всех)
 
     readers_active = db_session.query(User_Flask).filter(User_Flask.books != None).all() # Список читателей которые взяли хотя бы одну книгу #!
-    flash(f'{[reader.name for reader in readers_active]}')
+    readers_active = [reader.name for reader in readers_active]
 
     return render_template('general_report.html',
                            count_books = count_books,
@@ -325,6 +325,16 @@ def general_report():
                            readers_count=readers_count,
                            all_readers=all_readers,
                            readers_active=readers_active)
+
+
+# @app.route('\personal_area')
+# def personal_area():
+
+
+    # return render_template('personal_area.html')
+# @app.route('/login', methods=['POST', 'GET'])
+# def login():
+
 # def connect_db():
 #     connection = sqlite3.connect('Library_FLASK_DB')
 #     connection.row_factory = sqlite3.Row

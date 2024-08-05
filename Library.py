@@ -289,44 +289,29 @@ commands = {
 }
 
 
-def main(for_Flask: bool) -> None:  # Функция запуска словаря лямбда функций с вызовами методов класса Library
-    if not for_Flask:
-        while 1:
-            start_app = int(input('Что хотите сделать? Введите соответсвующую цифру!\n'
-                                  '1 - Добавить книгу в библиотеку\n'
-                                  '2 - Удалить книгу из библиотеки по ID\n'
-                                  '3 - Найти книгу в библиотеке по ID\n'
-                                  '4 - Зарегистрировать нового читателя\n'
-                                  '5 - Выдать читателю книгу\n'
-                                  '6 - Оформить возврата книги читателем\n'
-                                  '7 - Составить отчет о книгах на руках\n'
-                                  '8 - Составить отчет о книгах в библиотеке\n'
-                                  '9 - Составить общий отчет о состоянии библиотеки\n'))
-            if start_app in list(range(1, 10)):
-                commands[start_app]()
-            else:
-                print(f'Нет такого номера команды!')
-    else:
-        db_library.cursor.execute('''SELECT * FROM Users_db;''')
-        res_data = db_library.cursor.fetchall()
-        print(f'res {res_data}')
-        os.chdir('Flask')
-        connect = sqlite3.connect('Library_FLASK_DB')
-        cur = connect.cursor()
-        for i in res_data:
-            data = i[1:]
-            print(data)
-            cur.execute('''INSERT INTO Users_table_Flask
-                                (name, email)
-                                VALUES(?, ?);''', data)
-            connect.commit()
+def main() -> None:  # Функция запуска словаря лямбда функций с вызовами методов класса Library
+    while 1:
+        start_app = int(input('Что хотите сделать? Введите соответсвующую цифру!\n'
+                              '1 - Добавить книгу в библиотеку\n'
+                              '2 - Удалить книгу из библиотеки по ID\n'
+                              '3 - Найти книгу в библиотеке по ID\n'
+                              '4 - Зарегистрировать нового читателя\n'
+                              '5 - Выдать читателю книгу\n'
+                              '6 - Оформить возврата книги читателем\n'
+                              '7 - Составить отчет о книгах на руках\n'
+                              '8 - Составить отчет о книгах в библиотеке\n'
+                              '9 - Составить общий отчет о состоянии библиотеки\n'))
+        if start_app in list(range(1, 10)):
+            commands[start_app]()
+        else:
+            print(f'Нет такого номера команды!')
+
 
 
 
 
 
 if __name__ == '__main__':
-    main(for_Flask=True)
-else:
-    main(for_Flask=True)
+    main()
+
 
