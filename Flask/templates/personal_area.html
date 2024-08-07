@@ -1,10 +1,38 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
+{% include "card_template.html" %}
 <body>
+
+<div class="wrapper">
+<div class="card w-100" style="max-width: 400px;">
+  <!-- Sidebar -->
+  <nav id="sidebar">
+    <div class="sidebar-header">
+      <h3 class="card-title text-center mb-1">Личный кабинет читателя</h3>
+    </div>
+
+    <ul class="list-unstyled components">
+      <p>Читатель : {{ username }}</p>
+
+      <li class="active">
+        <a href="#bookSubmenu" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle">Профиль</a>
+        <ul class="collapse list-unstyled" id="bookSubmenu">
+
+          <li>
+            <a href="{{ url_for('my_book', email=email) }}" id="lettering">Мои книги</a>
+          </li>
+        </ul>
+      </li>
+
+    </ul>
+  </nav>
+
+
+</div>
+
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+
+
 
 </body>
 </html>

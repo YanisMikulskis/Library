@@ -1,12 +1,12 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-	<meta charset="UTF-8">
-		<title>Удаление книги</title>
-	</head>
+{% include "card_template.html" %}
 	<body>
-			<h2>Введите id книги, которую нужно удалить</h2>
-			<h3>Удалить одну книгу или несколько?</h3>
+	<div class="wrapper">
+  <!-- Sidebar -->
+  <nav id="sidebar">
+    <div class="card w-100" style="max-width: 400px;">
+      <h3 class="card-title text-center mb-2">Введите id книги, которую нужно удалить</h3>
+<h5 class="card-title text-left mb-2">Удалить одну книгу или несколько?</h5>
+<!--			<h5>Удалить одну книгу или несколько?</h5>-->
 
 
 	  <form>
@@ -40,18 +40,10 @@
 </style>
 
 
-
-<!--<div id="input_many_book">-->
-<!--  <form role="form" autocomplete="off" method="POST">-->
-<!--	  <label>Введите количество книг, которые нужно удалить</label>-->
-<!--    <input type="text" name="nameReq">-->
-<!--</form>-->
-<!--</div>-->
-
 <div id="input_many_book">
 	<form method="POST" role="form" autocomplete="off" action="/remove_book">
 		<input type="text" name="some_book_remove" placeholder="Введите несколько id">
-		<button type="submit">Ок</button>
+		<button type="submit">Удалить книги</button>
 	</form>
 </div>
 
@@ -60,11 +52,9 @@
 <div id="input_one_book">
 	<form method="POST" action="/remove_book">
 		<input type="text" name="one_book_remove" placeholder="Введите один id" required>
-		<button type="submit">Отправить</button>
+		<button type="submit">Удалить книгу</button>
 	</form>
 </div>
-
-
 
     {% with messages = get_flashed_messages() %}
       {% if messages %}

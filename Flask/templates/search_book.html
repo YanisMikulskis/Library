@@ -1,12 +1,39 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-	<meta charset="UTF-8">
-		<title>Поиск книги</title>
-	</head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
+<style>
+  #sidebar {
+    min-width: 400px;
+    max-width: 400px;
+    transition: all 0.3s;
+  }
+  #sidebar.active {
+    margin-left: -250px;
+  }
+  #content {
+    width: 100%;
+    padding: 20px;
+    transition: all 0.3s;
+  }
+
+  #lettering {
+    margin-left: 30px;
+  }
+
+
+</style>
+</head>
 	<body>
-			<h2>Введите id книги, которую нужно найти</h2>
-			<h3>Какую книгу нужно найти?</h3>
+	<div class="wrapper">
+  <!-- Sidebar -->
+  <nav id="sidebar">
+    <div class="card w-100" style="max-width: 400px;">
+		<h3 class="card-title text-center mb-2">Введите id книги, которую нужно найти</h3>
+<h5 class="card-title text-left mb-2">Какую книгу ищем?</h5>
+
 
 
 <!--<p>{{ quantity }}</p>-->

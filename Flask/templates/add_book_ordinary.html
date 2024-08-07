@@ -1,17 +1,29 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-	<meta charset="UTF-8">
-		<title>Добавление новой книги</title>
-	</head>
+{% include "card_template.html" %}
 	<body>
-			<h1>Введите данные книги, которую хотите добавить</h1>
+
+	<div class="card w-100" style="max-width: 400px;">
+		<nav id="sidebar">
+    <div class="sidebar-header">
+		<h3 class="card-title text-center mb-1">Введите данные книги, которую хотите добавить</h3>
+
+	</div>
+			<div>
 	<form method="POST" action="/add_book">
-		<input type="text" name="title_book" placeholder="Название книги" required>
-		<input type="text" name="author_book" placeholder="Автор книги" required>
-		<input type="text" name="year_book" placeholder="Год написания" required>
+		<input type="text" name="title_book" placeholder="Название книги" required><br><br>
+		<input type="text" name="author_book" placeholder="Автор книги" required><br><br>
+		<input type="text" name="year_book" placeholder="Год написания" required><br><br>
 		<button type="submit">Отправить</button>
 	</form>
+		<p>
+		<form method="POST" action="/add_book">
+		<input type="submit" name='button_network' value="Добавить книги из сети">
+
+	</form>
+
+
+
+
+
     {% with messages = get_flashed_messages() %}
       {% if messages %}
         {% for message in messages %}
@@ -19,6 +31,9 @@
         {% endfor %}
       {% endif %}
     {% endwith %}
+				<br>
 	<a href="{{ url_for('menu') }}" class="button">Вернуться в меню</a>
-  </body>
+	</div>
+
+	</body>
 </html>

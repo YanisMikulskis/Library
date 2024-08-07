@@ -1,16 +1,17 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-	<meta charset="UTF-8">
-		<title>Добавление нового читателя</title>
-	</head>
+{% include "card_template.html" %}
+<div class="wrapper">
+  <!-- Sidebar -->
+  <nav id="sidebar">
+    <div class="card w-100" style="max-width: 400px;">
+		<h3 class="card-title text-center mb-2">Регистрация нового читателя</h3>
+<h5 class="card-title text-center mb-2">Введите его данные</h5>
 	<body>
-			<h1>Введите данные нового читателя</h1>
+
 
 	<form method="POST" action="/new_reader">
-		<input type="text" name="name_reader" placeholder="Имя читателя" required>
-		<input type="text" name="email_reader" placeholder="Электронная почта читателя" required>
-		<input type="text" name="password_reader" placeholder="Пароль (не обязательно)">
+		<input type="text" name="name_reader" size="30" placeholder="Имя читателя" required><br><br>
+		<input type="text" name="email_reader" size="30" placeholder="Электронная почта читателя" required><br><br>
+		<input type="text" name="password_reader" size="30" placeholder="Пароль (не обязательно)"><br><br>
 		<button type="submit">Регистрация</button>
 	</form>
 

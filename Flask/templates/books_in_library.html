@@ -1,21 +1,21 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-	<meta charset="UTF-8">
-		<title>Список книг, которые на руках</title>
-	</head>
+{% include "card_template.html" %}<div class="wrapper">
+  <!-- Sidebar -->
+  <nav id="sidebar">
+    <div class="card w-100" style="max-width: 400px;">
+		<a href="{{ url_for('menu') }}" class="button">Вернуться в меню</a>
+		<h3 class="card-title text-center mb-2">Книги в библиотеке</h3>
+
 	<body>
-			<h1>Эти книги не в библиотеке!</h1>
-			<h3>Список в алфавитном порядке</h3>
 
 	{% for key, book_hand in books_dict.items() %}
 		{% for book in book_hand %}
+	<hr>
 			<li>Название: {{ book.title }}</li>
 			<li>Номер: {{ book.personal_number }}</li>
 			<li>Автор: {{ book.author }}</li>
 			<li>Год написания: {{ book.year }}</li>
 			<li>Количество: {{ book.count }}</li>
-			<br>
+	<br>
 		{% endfor %}
 	{% endfor %}
 

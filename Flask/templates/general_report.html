@@ -1,16 +1,32 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-	<meta charset="UTF-8">
-		<title>Список книг, которые на руках</title>
-	</head>
+{% include "card_template.html" %}<div class="wrapper">
+  <!-- Sidebar -->
+  <nav id="sidebar">
+    <div class="card w-100" style="max-width: 400px;">
+		<h3 class="card-title text-center mb-2">Общий отчет о состоянии библиотеки</h3>
+<h5 class="card-title text-left mb-2">Общее количество книг, учтенных в библиотеке: {{ count_books }} шт</h5>
+		<style>
+			.color_hr_red {
+				border: none;
+				background-color: red;
+				color: red;
+				height: 2px;
+			}
+
+			.color_hr_blue {
+				border: none;
+				background-color: blue;
+				color: blue;
+				height: 1px;
+			}
+		</style>
+		<p class="color_hr_red"></p>
+		<h5 class="card-title text-left mb-1">Cписок книг, которые на руках:</h5>
 	<body>
-			<h2>Общий отчет о состоянии библиотеки</h2>
-			<h4>Общее количество книг, учтенных в библиотеке: {{ count_books }} шт</h4>
-			<hr>
+
             {% for key, book in all_books_dict.items() %}
 		        {% for element in book %}
-					<li><h4>{{ element.title }}</h4></li>
+			<hr>
+					<li>Название: {{ element.title }}</li>
 					<li>Автор: {{ element.author }}</li>
 					<li>Год написания: {{ element.year }}</li>
 					<li>Универсальный номер: {{ element.universal_number }}</li>
@@ -19,33 +35,24 @@
 					<br>
 				{% endfor %}
 			{% endfor %}
-			<hr>
-			<hr>
-			<h4>Количество книг на руках: {{ hand_books }} шт</h4>
-			<h4>Количество книг в библиотеке: {{ library_books }} шт</h4>
-			<h4>Читателей зарегистрировано: {{ readers_count }} чел</h4>
+			<p class="color_hr_red"></p>
+			<h5 class="card-title text-left mb-1">Количество книг на руках: {{ hand_books }} шт</h5>
+			<h5 class="card-title text-left mb-1">Количество книг в библиотеке: {{ library_books }} шт</h5>
+	<p class="color_hr"></p>
+			<h5 class="card-title text-left mb-1">Читателей зарегистрировано: {{ readers_count }} чел</h5>
 			{% for key, reader in all_readers.items() %}
 				{% for element in reader %}
-					<h4>{{ element.name }}</h4>
+					<li>Имя: {{ element.name }}</li>
 					<li>Почта: {{ element.email }}</li>
 					<li>Взято книг: {{ element.books }}</li>
-					<h4>##################</h4>
+					<p class="color_hr_blue"></p>
 				{% endfor %}
 			{% endfor %}
-			<h4>Активные читатели</h4>
+			<p class="color_hr_red"></p>
+			<h5 class="card-title text-left mb-1">Активные читатели</h5>
 			{% for name_reader in readers_active %}
 				<li>{{ name_reader }}</li>
 			{% endfor %}
-			{% with messages = get_flashed_messages() %}
-      {% if messages %}
-        {% for message in messages %}
-            <p>{{ message }}</p>
-        {% endfor %}
-      {% endif %}
-    {% endwith %}
-
-
-
 
 	<a href="{{ url_for('menu') }}" class="button">Вернуться в меню</a>
   </body>

@@ -10,6 +10,7 @@ from flask import url_for
 from flask import request
 from flask import jsonify
 from flask import flash
+from Book_for_flask import make_books
 import re
 
 # from sqlalchemy import create_engine, Column, Integer, String,Boolean, select, MetaData, ForeignKey
@@ -32,7 +33,7 @@ def book():
 
 @app.route('/home')
 def home():
-    return render_template('hello.html')
+    return render_template('personal_area.html')
 
 
 @app.errorhandler(404)
@@ -43,6 +44,13 @@ def error404(error):
 
 def user_active(username):
     return username
+
+
+@app.route('/personal_area')
+def personal_area():
+    username = request.args.get('username')
+    email_form = request.args.get('email_form')
+    return render_template('personal_area.html', username=username, email=email_form)
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
@@ -52,12 +60,13 @@ def login():
         password = db_session.query(User_Flask).filter(User_Flask.email==email_form).first().password
         if password is not None:
             if hashlib.sha256(password_form.encode('utf-8')).hexdigest() == password:
-                return render_template('hello.html', username=username, email=email_form)
+                return redirect(url_for('personal_area', username=username, email_form=email_form))
+
             else:
                 flash(f'Неправильный пароль!')
         else:
             if username:
-                return render_template('hello.html', username=username, email=email_form)
+                return redirect(url_for('personal_area', username=username, email_form=email_form))
             else:
                 flash(f'Нет такого пользователя!')
     return render_template('login.html')
@@ -84,27 +93,30 @@ def menu():
 
 @app.route('/add_book', methods=['POST', 'GET'])
 def add_book():
-    if request.method == 'POST':
-        title_book = request.form['title_book']
-        author_book = request.form['author_book']
-        year_book = request.form['year_book']
-        number_book = (db_session.query(Library_Flask)
-                       .order_by(Library_Flask.personal_number.desc())
-                       .first().personal_number) + 1
-        new_book = Library_Flask(title=title_book,
-                                 author=author_book,
-                                 year=year_book,
-                                 is_checked_out=1,
-                                 personal_number=number_book,
-                                 user_book_id=None)
-        flash(message='Книга добавлена!')
-        data_book = [title_book, author_book, year_book]
-        if all(data_book):
-            db_session.add_all([new_book])
-            db_session.commit()
 
-    else:
-        flash(message='Введите данные')
+    if request.method == 'POST':
+        if request.form['button_network']:
+            print(make_books(1))
+        else:
+            title_book = request.form['title_book']
+            author_book = request.form['author_book']
+            year_book = request.form['year_book']
+            number_book = (db_session.query(Library_Flask)
+                           .order_by(Library_Flask.personal_number.desc())
+                           .first().personal_number) + 1
+            new_book = Library_Flask(title=title_book,
+                                     author=author_book,
+                                     year=year_book,
+                                     is_checked_out=1,
+                                     personal_number=number_book,
+                                     user_book_id=None)
+            flash(message='Книга добавлена!')
+            data_book = [title_book, author_book, year_book]
+            if all(data_book):
+                db_session.add_all([new_book])
+                db_session.commit()
+
+
     return render_template('add_book_ordinary.html')
 
 @app.route('/remove_book', methods = ['POST', 'GET'])
@@ -160,7 +172,7 @@ def search_book():
             if 'Результат' not in found_book:
                 found_book.setdefault(f'Результат', [])
             data_book = {'Уникальный номер книги': result_book.personal_number,
-                         'Название': result_book.title,
+                         'Название': f'\'{result_book.title}\'',
                          'Автор': result_book.author,
                          'Год написания': result_book.year,
                          'Наличие книги': f'В библиотеке' if result_book.user_book_id is None
@@ -192,6 +204,7 @@ def new_reader():
                                     password = hashed_password)
             db_session.add_all([new_reader])
             db_session.commit()
+            db_session.rollback()
             flash(f'Читатель зарегистрирован')
         else:
             flash(f'Неправильный ввод почты!')
@@ -210,6 +223,7 @@ def checkout_book():
             if book.user_book_id is None:
                 reader.books.extend([book])
                 db_session.commit()
+                db_session.rollback()
                 flash(f'Книга выдана пользователю {reader.name}')
             else:
                 flash(f'Эта книга уже на руках!')
@@ -261,7 +275,7 @@ def books_on_hand():
         name_reader = db_session.query(User_Flask).filter(User_Flask.id == book.user_book_id).first().name
         email_reader = db_session.query(User_Flask).filter(User_Flask.id == book.user_book_id).first().email
         book_data = {
-            'title': book.title,
+            'title': f'\'{book.title}\'',
             'personal_number': book.personal_number,
             'reader': name_reader,
             'email_reader': email_reader
@@ -282,7 +296,7 @@ def books_in_library():
     for book in books_sorted:
         dict_book = {
             'personal_number': book.personal_number,
-            'title': book.title,
+            'title': f'\'{book.title}\'',
             'author': book.author,
             'year': book.year,
             'count': db_session.query(func.count(Library_Flask.id).filter(Library_Flask.title == book.title)).scalar()
@@ -305,7 +319,7 @@ def general_report():
 
     for book in all_books_sorted:
         book_dict = {
-            'title': book.title,
+            'title': f'\'{book.title}\'',
             'author': book.author,
             'year': book.year,
             'universal_number': book.personal_number,
@@ -404,7 +418,7 @@ def general_report():
 # @app.route('/hello/<name>')
 # def hello(name):
 #     surname = 'смирнов'
-#     return render_template('hello.html', name=name, surname=surname)
+#     return render_template('personal_area.html', name=name, surname=surname)
 #
 # @app.route('/greet/<username>')
 # def greet(username):
