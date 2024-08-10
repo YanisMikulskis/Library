@@ -1,39 +1,116 @@
 {% include "card_template.html" %}
-	<body>
+<style>
+	#count_network_book {
+		display: none;
+		animation-duration: 1.5s;
+		animation-fill-mode: both;
+		animation-name: fadeIn;
+	}
 
-	<div class="card w-100" style="max-width: 400px;">
-		<nav id="sidebar">
-    <div class="sidebar-header">
-		<h3 class="card-title text-center mb-1">Введите данные книги, которую хотите добавить</h3>
+	#count_network_book.open, #back {
+		display: none;
+	}
 
-	</div>
-			<div>
-	<form method="POST" action="/add_book">
-		<input type="text" name="title_book" placeholder="Название книги" required><br><br>
-		<input type="text" name="author_book" placeholder="Автор книги" required><br><br>
-		<input type="text" name="year_book" placeholder="Год написания" required><br><br>
-		<button type="submit">Отправить</button>
-	</form>
-		<p>
-		<form method="POST" action="/add_book">
-		<input type="submit" name='button_network' value="Добавить книги из сети">
+	#add_book_form.open {
+		display: block;
+	}
 
-	</form>
+</style>
+<div class="card w-100" style="max-width: 400px;">
+	<nav id="sidebar">
+		<div class="sidebar-header">
+			<h3 class="card-title text-center mb-1">Введите данные книги, которую хотите добавить</h3>
+
+		</div>
+		<div>
 
 
+			<div id="count_network_book">
+				<form method="POST" action="/add_book">
+
+					<label>
+						<input type="text" name="count_book" placeholder="Сколько книг добавить?" required>
+					</label>
+					<button type="submit">Добавить</button>
+
+
+				</form>
+			</div>
+			<form>
+				<input id='back' type="button" value="Назад" />
+			</form>
 
 
 
-    {% with messages = get_flashed_messages() %}
-      {% if messages %}
-        {% for message in messages %}
-            <p>{{ message }}</p>
-        {% endfor %}
-      {% endif %}
-    {% endwith %}
-				<br>
-	<a href="{{ url_for('menu') }}" class="button">Вернуться в меню</a>
-	</div>
+			<div id="add_book_form">
+				<form method="POST" action="/add_book">
 
-	</body>
-</html>
+					<input type="text" name="title_book" placeholder="Название книги" required><br><br>
+					<input type="text" name="author_book" placeholder="Автор книги" required><br><br>
+					<input type="text" name="year_book" placeholder="Год написания" required><br><br>
+
+					<button type="submit">Добавить</button>
+				</form>
+			</div>
+
+
+			<form>
+				<input id='network' type="button" value="Добавить книги из сети" />
+			</form>
+
+			<!--	<div id="network">-->
+			<!--		<form method="POST" action="/add_book">-->
+			<!--&lt;!&ndash;			<input id='network' type="submit" name='button_network' value="Добавить книги из сети">&ndash;&gt;-->
+			<!--			<button type="submit">Добавить книги из сети</button>-->
+			<!--		</form>-->
+			<!--	</div>-->
+
+
+			<p>
+
+
+
+
+
+
+				{% with messages = get_flashed_messages() %}
+				{% if messages %}
+				{% for message in messages %}
+			<p>{{ message }}</p>
+			{% endfor %}
+			{% endif %}
+			{% endwith %}
+			<br>
+			<a href="{{ url_for('menu') }}" class="button">Вернуться в меню</a>
+		</div>
+		<script>
+			const add_book_form = document.getElementById('add_book_form');
+			const network = document.getElementById('network')
+			const count_network_book = document.getElementById('count_network_book');
+			const back = document.getElementById('back');
+
+
+
+			network.addEventListener('click', addNetworkBook)
+			back.addEventListener('click', backPage)
+
+
+			function addNetworkBook(){
+				count_network_book.setAttribute('style', 'display: block')
+				back.setAttribute('style', 'display: block')
+
+				add_book_form.setAttribute('style', 'display: none')
+				network.setAttribute('style', 'display: none')
+			}
+
+			function backPage(){
+				count_network_book.setAttribute('style', 'display: none')
+				back.setAttribute('style', 'display: none')
+
+				add_book_form.setAttribute('style', 'display: block')
+				network.setAttribute('style', 'display: block')
+
+			}
+
+		</script>
+

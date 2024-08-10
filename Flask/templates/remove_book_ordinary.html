@@ -10,7 +10,7 @@
 
 
 	  <form>
-  <input  id='one_book' type="button" value="Одну" />
+  <input id='one_book' type="button" value="Одну" />
 		  <input id='many_book' type="button" value="Несколько" />
 </form>
 <!--<p>{{ quantity }}</p>-->
@@ -42,7 +42,7 @@
 
 <div id="input_many_book">
 	<form method="POST" role="form" autocomplete="off" action="/remove_book">
-		<input type="text" name="some_book_remove" placeholder="Введите несколько id">
+		<input type="text" name="some_book_remove" placeholder="Введите несколько id через запятую" required>
 		<button type="submit">Удалить книги</button>
 	</form>
 </div>
@@ -65,28 +65,29 @@
     {% endwith %}
 	<a href="{{ url_for('menu') }}" bottclass="button">Вернуться в меню</a>
   <script>
-	  	const button = document.getElementById("one_book");
-		const button2 = document.getElementById("many_book")
+	  	const one_book = document.getElementById("one_book");
+		const many_book = document.getElementById("many_book")
 
 		// const paragraph = document.querySelector("p");
 
-		const form_many_book = document.getElementById("input_many_book")
-		const form_one_book = document.getElementById("input_one_book")
+		const input_many_book = document.getElementById("input_many_book")
+		const input_one_book = document.getElementById("input_one_book")
 
-		button.addEventListener("click", updateButtonOne);
-		button2.addEventListener("click", updateButtonMany);
-		form_many_book.addEventListener("click", updateButtonMany);
-		form_one_book.addEventListener('click', updateButtonOne)
+		one_book.addEventListener("click", updateButtonOne);
+		many_book.addEventListener("click", updateButtonMany);
+
+		input_many_book.addEventListener("click", updateButtonMany);
+		input_one_book.addEventListener('click', updateButtonOne)
 		function updateButtonOne() {
 			// paragraph.textContent = 1;
-			form_one_book.setAttribute('style', 'display: block;');
-            form_many_book.setAttribute('style', 'display: none;');
+			input_one_book.setAttribute('style', 'display: block;');
+            input_many_book.setAttribute('style', 'display: none;');
 		}
 
 		function updateButtonMany() {
 			// paragraph.textContent = 0;
-			form_many_book.setAttribute('style', 'display: block;');
-			form_one_book.setAttribute('style', 'display: none;');
+			input_many_book.setAttribute('style', 'display: block;');
+			input_one_book.setAttribute('style', 'display: none;');
 		}
 
 
