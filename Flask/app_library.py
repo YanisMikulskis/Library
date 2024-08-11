@@ -13,27 +13,26 @@ app.secret_key = 'my_library'
 
 
 @app.route('/')
-def book():
-    print('запущено')
+def start_page():
+    """
+    Стартовая страница
+    """
     return render_template('start_page.html')
 
 
-@app.route('/home')
-def home():
-    return render_template('personal_area.html')
-
-
 @app.errorhandler(404)
-def error404():
+def error404(e):
+    """
+    Ошибка 404
+    """
     return render_template('error404.html')
-
-
-def user_active(username):
-    return username
 
 
 @app.route('/personal_area')
 def personal_area():
+    """
+    Личный кабинет читателя
+    """
     username = request.args.get('username')
     email_form = request.args.get('email_form')
     return render_template('personal_area.html', username=username, email=email_form)
@@ -41,6 +40,9 @@ def personal_area():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    """
+    Авторизация читателя
+    """
     if request.method == 'POST':
         email_form = request.form['email']
         password_form = request.form['password']
@@ -62,24 +64,36 @@ def login():
 
 @app.route('/my_book')
 def my_book():
+    """
+    Книги читателя
+    """
     email = request.args.get('email')
-    book_username = db_session.query(User_Flask).filter(User_Flask.email == email).first().books
-    if not book_username:
-        message_not_books = f'Вам пока не выдавали книги! Приходите в библиотеку'
-        return render_template('my_book.html', message_not_books=message_not_books)
+    try:
+        book_username = db_session.query(User_Flask).filter(User_Flask.email == email).first().books
+    except AttributeError:  # Если мы хотим посмотреть список книг, но пока не залогинились
+        return redirect(error404)
     else:
+        if not book_username:
+            message_not_books = f'Вам пока не выдавали книги! Приходите в библиотеку'
+            return render_template('my_book.html', message_not_books=message_not_books)
+        else:
 
-        return render_template('my_book.html', book_username=book_username, email=email)
+            return render_template('my_book.html', book_username=book_username, email=email)
 
 
 @app.route('/menu')
 def menu():
+    """
+    Главное меню библиотеки
+    """
     return render_template('menu.html')
 
 
 @app.route('/add_book', methods=['POST', 'GET'])
 def add_book():
-    #
+    """
+    Добавление книги в библиотеку
+    """
     if request.method == 'POST':
         def get_number_book():
             number_book = (db_session.query(Library_Flask)
@@ -124,6 +138,9 @@ def add_book():
 
 @app.route('/remove_book', methods=['POST', 'GET'])
 def remove_book():
+    """
+    Удаление книги из библиотеки
+    """
     if request.method == 'POST':
         # тут мы отлавливаем ошибку werkzeug.exceptions.BadRequestKeyError
         # эта ошибка связана с отсутствием формы в шаблоне. Такая ситуация происходит с формой ввода ОДНОГО id тогда и
@@ -140,12 +157,12 @@ def remove_book():
             some_book_id_from_form = request.form['some_book_remove']
 
         if one_book_id_from_form:
-            remove_book = (db_session.query(Library_Flask).
-                           filter(Library_Flask.id == one_book_id_from_form).first())
-            if remove_book is None:
+            book_deleted = (db_session.query(Library_Flask).
+                            filter(Library_Flask.id == one_book_id_from_form).first())
+            if book_deleted is None:
                 flash('Нет книги с таким id')
             else:
-                db_session.delete(remove_book)
+                db_session.delete(book_deleted)
                 db_session.commit()
                 flash('Книга удалена!')
         else:
@@ -153,8 +170,8 @@ def remove_book():
                 flash(message=f'Введите данные через запятую!')
             else:
                 form_list_data = some_book_id_from_form.split(',')
-                all_id = list(map(lambda i: str(i[0]), db_session.query(Library_Flask.id).all()))  # все id таблицы
-                print(f'all {all_id}')
+                all_id = list(
+                    map(lambda x: str(x[0]), db_session.query(Library_Flask.id).all()))  # все id таблицы
                 id_check = []
                 for i in form_list_data:
                     id_check.append(True) if i in all_id else id_check.append(False)
@@ -163,9 +180,9 @@ def remove_book():
                     flash('Один или несколько введенных id нет в таблице книг!')
                 else:
                     for book_id in form_list_data:
-                        remove_book = (db_session.query(Library_Flask).
-                                       filter(Library_Flask.id == book_id).first())
-                        db_session.delete(remove_book)
+                        book_deleted = (db_session.query(Library_Flask).
+                                        filter(Library_Flask.id == book_id).first())
+                        db_session.delete(book_deleted)
                         db_session.commit()
                     flash('Книги удалены!')
     return render_template('remove_book_ordinary.html')
@@ -173,31 +190,38 @@ def remove_book():
 
 @app.route('/search_book', methods=['POST', 'GET'])
 def search_book():
-    found_book = {
-    }
+    """
+    Поиск книги в библиотеке
+    """
     if request.method == 'POST':
         result_search = request.form['search_book']
         result_book = db_session.query(Library_Flask).filter(Library_Flask.id == result_search).first()
         if result_book is not None:
-            if 'Результат' not in found_book:
-                found_book.setdefault(f'Результат', [])
+            if result_book.user_book_id is None:
+                availability = f'В библиотеке'
+            else:
+                info = f'Книга у читателя'
+                name_reader = (db_session.query(Library_Flask).
+                               filter(Library_Flask.user_book_id == result_book.user_book_id).first().name)
+                availability = f'{info}: {name_reader}'
             data_book = {'Уникальный номер книги': result_book.personal_number,
                          'Название': f'\'{result_book.title}\'',
                          'Автор': result_book.author,
                          'Год написания': result_book.year,
-                         'Наличие книги': f'В библиотеке' if result_book.user_book_id is None
-                         else f'Книга у читателя:{db_session.query(User_Flask).filter(User_Flask.id == result_book.user_book_id).first().name}'
+                         'Наличие книги': availability
                          }
-
             for explanation, data in data_book.items():
                 flash(f'{explanation}: {data}')
         else:
             flash(f'Нет книги с таким id!')
-    return render_template('search_book.html', found_book=found_book)
+    return render_template('search_book.html')
 
 
 @app.route(f'/new_reader', methods=['POST', 'GET'])
 def new_reader():
+    """
+    Регистрация нового читателя
+    """
     if request.method == 'POST':
         name_reader = request.form['name_reader']
 
@@ -209,10 +233,10 @@ def new_reader():
         hashed_password = None if not password_reader else hashlib.sha256(password_reader.encode('utf-8')).hexdigest()
 
         if email_domain in domains:
-            new_reader = User_Flask(name=name_reader,
-                                    email=email_reader,
-                                    password=hashed_password)
-            db_session.add_all([new_reader])
+            new_user = User_Flask(name=name_user,
+                                  email=email_user,
+                                  password=hashed_password)
+            db_session.add_all([new_user])
             db_session.commit()
             db_session.rollback()
             flash(f'Читатель зарегистрирован')
@@ -223,6 +247,9 @@ def new_reader():
 
 @app.route('/checkout_book', methods=['POST', 'GET'])
 def checkout_book():
+    """
+    Выдача книги читателю
+    """
     if request.method == 'POST':
         select_reader_id = request.form['id_reader']
         select_book_number = request.form['number_book']
@@ -245,6 +272,9 @@ def checkout_book():
 
 @app.route('/return_book', methods=['POST', 'GET'])
 def return_book():
+    """
+    Возврат книги читателем
+    """
     if request.method == 'POST':
         input_reader_id = request.form['id_reader']
         input_book_number = request.form['number_return_book']
@@ -268,14 +298,20 @@ def return_book():
 
 
 def books_sorted_func(hand: bool) -> list:
+    """
+    Сортировка книг по алфавиту (на руках или в библиотеке)
+    """
     books_sorted = (db_session.query(Library_Flask).
-                    filter(Library_Flask.user_book_id != None if hand else Library_Flask.user_book_id == None).
-                    order_by(Library_Flask.title).all())
+                    filter(Library_Flask.user_book_id.__ne__(None) if hand else Library_Flask.user_book_id).all())
+
     return books_sorted
 
 
 @app.route('/books_on_hand')
 def books_on_hand():
+    """
+    Книги на руках. Отчет
+    """
     books_dict = {
         f'Книги на руках и читатели': []
     }
@@ -297,6 +333,9 @@ def books_on_hand():
 
 @app.route('/books_in_library')
 def books_in_library():
+    """
+    Книги в библиотеке. Отчет
+    """
     books_sorted = books_sorted_func(hand=False)
     books_dict = {
         'Общая база книг в библиотеке': []
@@ -317,6 +356,9 @@ def books_in_library():
 
 @app.route('/general_report')
 def general_report():
+    """
+    Полный отчет о состоянии библиотеки
+    """
     count_books = db_session.query(func.count(Library_Flask.id)).scalar()
     # Общее количество книг в библиотеке
 
@@ -360,7 +402,7 @@ def general_report():
     # Список читателей (всех)
 
     readers_active = db_session.query(User_Flask).filter(
-        User_Flask.books != None).all()  # Список читателей которые взяли хотя бы одну книгу #!
+        User_Flask.books.__ne__(None)).all()  # Список читателей которые взяли хотя бы одну книгу #!
     readers_active = [reader.name for reader in readers_active]
 
     return render_template('general_report.html',
@@ -373,109 +415,5 @@ def general_report():
                            readers_active=readers_active)
 
 
-# @app.route('\personal_area')
-# def personal_area():
-
-
-# return render_template('personal_area.html')
-# @app.route('/login', methods=['POST', 'GET'])
-# def login():
-
-# def connect_db():
-#     connection = sqlite3.connect('Library_FLASK_DB')
-#     connection.row_factory = sqlite3.Row
-#     return connection
-# @app.route('/')
-# def hello_library():
-#     # connection = connect_db()
-#     # cursor = connection.cursor()
-#     # cursor.execute('''SELECT * FROM Library_table_flask;''')
-#     # books = '\n'.join(list(map(str, list(map(dict, cursor.fetchall())))))
-#     #
-#     # print(books)
-#
-#     return f'Hello, Library!'
-#
-#
-# @app.errorhandler(404)
-# def error404(error):
-#     return render_template('error404.html')
-#
-# @app.route('/home')
-# def home():
-#     return render_template('menu.html')
-#
-#
-#
-#
-# if __name__ == '__main__':
-#     app.run(debug=True)
-
-
-# @app.route('/')
-# def hello_world():
-#     return 'Hello, world'
-#
-# @app.route('/about') # маршрут
-# def about(): # функция действия в конце маршрута
-#     return f'This is about page' #то что будет на странице, когда перейдем по маршруту
-#
-# @app.route('/user/<username>')
-# def show_user_profile(username):
-#     return f' User {username}'
-#
-# @app.route('/hello/<name>')
-# def hello(name):
-#     surname = 'смирнов'
-#     return render_template('personal_area.html', name=name, surname=surname)
-#
-# @app.route('/greet/<username>')
-# def greet(username):
-#     return f'Hello, dear {username}!!'
-#
-#
-#
-# @app.route('/submit', methods = ['POST', 'GET'])
-# def submit():
-#
-#     if request.method == 'POST': #если нажимаем кнопку submit (тут POST означает именно ОТПРАВКУ данных)
-#
-#         name = request.form.get('name') #забираем имя которое мы ввели ранее в форме
-#         surname = request.form.get('surname')
-#         return f'hello, forms and {len(name)}  {surname}!!'
-#
-#     return render_template('menu.html') #при переходе по маршруту сразу генерится форма
-#
-#     # return render_template('menu.html')
-#
-#
-# @app.route('/data')
-# def data():
-#     return jsonify({'key':'value'})
-#
-#
-#
-#
-#
-# #подключение к БД
-#
-#
-#
-# app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///example.db'
-# db = SQLAlchemy(app)
-#
-# class User(db.Model):
-#     id = db.Column(db.Integer, primary_key=True)
-#     username = db.Column(db.String(80), unique=True,nullable=False)
-#     email = db.Column(db.String(120), unique=True,nullable=False)
-#
-#     def __repr__(self):
-#         return f'<User {self.username}>'
-#
-#
-# new_user = User(username='newuser',email='newuser@mail.ru')
-# db.session.add(new_user)
-# db.session.commit()
-#
 if __name__ == '__main__':
     app.run(debug=True)
