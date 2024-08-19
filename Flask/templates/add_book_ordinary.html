@@ -19,10 +19,13 @@
 <div class="card w-100" style="max-width: 400px;">
 	<nav id="sidebar">
 		<div class="sidebar-header">
+
 			<h3 class="card-title text-center mb-1">Введите данные книги, которую хотите добавить</h3>
 
 		</div>
 		<div>
+
+		<div id="stop_indicator">{{ stop }}</div>
 
 
 			<div id="count_network_book">
@@ -31,43 +34,49 @@
 					<label>
 						<input type="text" name="count_book" placeholder="Сколько книг добавить?" required>
 					</label>
-					<button type="submit">Добавить</button>
+					<button id='network_button' type="submit">Добавить</button>
 
 
 				</form>
 			</div>
-			<form>
-				<input id='back' type="button" value="Назад" />
-			</form>
 
 
 
+
+<!--			{% if books_network %}-->
+<!--					<label>-->
+<!--						<input type="text" name="count_book" placeholder="Сколько кбавить?" required>-->
+<!--					</label>-->
+<!--					<button id='network_button' type="submit">Добавить</button>-->
+
+
+
+
+
+
+
+
+<!--				{% else %}-->
 			<div id="add_book_form">
 				<form method="POST" action="/add_book">
 
 					<input type="text" name="title_book" placeholder="Название книги" required><br><br>
 					<input type="text" name="author_book" placeholder="Автор книги" required><br><br>
 					<input type="text" name="year_book" placeholder="Год написания" required><br><br>
-
 					<button type="submit">Добавить</button>
 				</form>
 			</div>
-
+<!--			{% endif %}-->
 
 			<form>
 				<input id='network' type="button" value="Добавить книги из сети" />
 			</form>
 
-			<!--	<div id="network">-->
-			<!--		<form method="POST" action="/add_book">-->
-			<!--&lt;!&ndash;			<input id='network' type="submit" name='button_network' value="Добавить книги из сети">&ndash;&gt;-->
-			<!--			<button type="submit">Добавить книги из сети</button>-->
-			<!--		</form>-->
-			<!--	</div>-->
-
 
 			<p>
-
+			<form>
+				<input id='back' type="button" value="Назад" />
+			</form>
 
 
 
@@ -85,7 +94,12 @@
 		</div>
 		<script>
 			const add_book_form = document.getElementById('add_book_form');
-			const network = document.getElementById('network')
+			// const stop = document.getElementById('stop_indicator')
+			const network = document.getElementById('network');
+			const network_button = document.getElementById('network_button');
+
+			const stop = "{{ stop }}";
+
 			const count_network_book = document.getElementById('count_network_book');
 			const back = document.getElementById('back');
 
@@ -93,6 +107,19 @@
 
 			network.addEventListener('click', addNetworkBook)
 			back.addEventListener('click', backPage)
+			network_button.addEventListener('click', addNetworkBook)
+
+
+			if (stop === True){
+				count_network_book.setAttribute('style', 'display: block')
+				back.setAttribute('style', 'display: block')
+
+				add_book_form.setAttribute('style', 'display: none')
+				network.setAttribute('style', 'display: none')
+
+			}
+
+
 
 
 			function addNetworkBook(){
@@ -113,4 +140,3 @@
 			}
 
 		</script>
-

@@ -7,13 +7,14 @@ from flask import Flask, render_template, redirect, url_for, request, jsonify, f
 from Book_for_flask import make_books
 import re
 from createDB import *
+from typing import Callable
 
 app = Flask(__name__)
 app.secret_key = 'my_library'
 
 
 @app.route('/')
-def start_page():
+def start_page() -> Callable:
     """
     Стартовая страница
     """
@@ -21,7 +22,7 @@ def start_page():
 
 
 @app.errorhandler(404)
-def error404(e):
+def error404(error) -> Callable:
     """
     Ошибка 404
     """
@@ -29,29 +30,29 @@ def error404(e):
 
 
 @app.route('/personal_area')
-def personal_area():
+def personal_area() -> Callable:
     """
     Личный кабинет читателя
     """
-    username = request.args.get('username')
-    email_form = request.args.get('email_form')
+    username: str = request.args.get('username')
+    email_form: str = request.args.get('email_form')
     return render_template('personal_area.html', username=username, email=email_form)
 
 
 @app.route('/login', methods=['GET', 'POST'])
-def login():
+def login() -> Callable:
     """
     Авторизация читателя
     """
     if request.method == 'POST':
-        email_form = request.form['email']
-        password_form = request.form['password']
+        email_form: str = request.form['email']
+        password_form: str = request.form['password']
         username = db_session.query(User_Flask).filter(User_Flask.email == email_form).first().name
+        print(type(username))
         password = db_session.query(User_Flask).filter(User_Flask.email == email_form).first().password
         if password is not None:
             if hashlib.sha256(password_form.encode('utf-8')).hexdigest() == password:
-                return redirect(url_for('personal_area', username=username, email_form=email_form))
-
+                return redirect(url_for('personal_area', username=username))
             else:
                 flash(f'Неправильный пароль!')
         else:
@@ -94,7 +95,9 @@ def add_book():
     """
     Добавление книги в библиотеку
     """
+
     if request.method == 'POST':
+
         def get_number_book():
             number_book = (db_session.query(Library_Flask)
                            .order_by(Library_Flask.personal_number.desc())
@@ -102,6 +105,7 @@ def add_book():
             return number_book
 
         try:
+
             title_book = request.form['title_book']
             author_book = request.form['author_book']
             year_book = request.form['year_book']
@@ -116,9 +120,16 @@ def add_book():
             if all(data_book):
                 db_session.add_all([new_book])
                 db_session.commit()
+
         except werkzeug.exceptions.BadRequestKeyError:
             count_book = request.form['count_book']
-            books_network = make_books(int(count_book)) if count_book.isdigit() else None
+            if count_book.isdigit():
+                books_network = make_books(int(count_book))
+            else:
+                flash(message='Введите цифру!')
+                return render_template('add_book_ordinary.html', stop=True)
+
+
             for data_book in books_network:
                 title_book = data_book[0]
                 author_book = data_book[1]
@@ -133,7 +144,7 @@ def add_book():
                 db_session.commit()
                 flash(message=f'Книга \'{title_book}\' из Сети добавлена!')
 
-    return render_template('add_book_ordinary.html')
+    return render_template('add_book_ordinary.html', stop=False)
 
 
 @app.route('/remove_book', methods=['POST', 'GET'])
@@ -142,13 +153,6 @@ def remove_book():
     Удаление книги из библиотеки
     """
     if request.method == 'POST':
-        # тут мы отлавливаем ошибку werkzeug.exceptions.BadRequestKeyError
-        # эта ошибка связана с отсутствием формы в шаблоне. Такая ситуация происходит с формой ввода ОДНОГО id тогда и
-        # только
-        # тогда (в данном случае) когда мы нажимаем кнопку all (т.е. хотим ввести НЕСКОЛЬКО id для удаления книг,
-        # а не одно). Также происходит и наоборот
-        # В шаблоне на JS я реализовал механизм нахождения на странице только одной формы, тобиш если мы хотим удалить
-        # одну книгу, то появляется соответствующая форма, а форма для ввода нескольких id исчезает (и наоборот)
         try:
             one_book_id_from_form = request.form['one_book_remove']
             some_book_id_from_form = None
@@ -157,8 +161,7 @@ def remove_book():
             some_book_id_from_form = request.form['some_book_remove']
 
         if one_book_id_from_form:
-            book_deleted = (db_session.query(Library_Flask).
-                            filter(Library_Flask.id == one_book_id_from_form).first())
+            book_deleted = (db_session.query(Library_Flask).filter(Library_Flask.id == one_book_id_from_form).first())
             if book_deleted is None:
                 flash('Нет книги с таким id')
             else:
@@ -170,8 +173,7 @@ def remove_book():
                 flash(message=f'Введите данные через запятую!')
             else:
                 form_list_data = some_book_id_from_form.split(',')
-                all_id = list(
-                    map(lambda x: str(x[0]), db_session.query(Library_Flask.id).all()))  # все id таблицы
+                all_id = list(map(lambda x: str(x[0]), db_session.query(Library_Flask.id).all()))  # все id таблицы
                 id_check = []
                 for i in form_list_data:
                     id_check.append(True) if i in all_id else id_check.append(False)
@@ -224,7 +226,6 @@ def new_reader():
     """
     if request.method == 'POST':
         name_reader = request.form['name_reader']
-
         email_reader = request.form['email_reader']
         email_domain = re.findall(r'@+\S+', email_reader)[0]
         domains = ['@mail.ru', '@gmail.com', '@rambler.ru', '@yahoo.com', '@yandex.ru']
@@ -233,8 +234,8 @@ def new_reader():
         hashed_password = None if not password_reader else hashlib.sha256(password_reader.encode('utf-8')).hexdigest()
 
         if email_domain in domains:
-            new_user = User_Flask(name=name_user,
-                                  email=email_user,
+            new_user = User_Flask(name=name_reader,
+                                  email=email_reader,
                                   password=hashed_password)
             db_session.add_all([new_user])
             db_session.commit()

@@ -11,7 +11,7 @@ import sqlite3
 import os
 
 connect = sqlite3.connect('Library_Database_Flask')
-cursor = connect.cursor()
+# cursor = connect.cursor()
 # cursor.execute('''
 #             CREATE TABLE IF NOT EXISTS Flask_Table_Users
 #             (
