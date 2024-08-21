@@ -8,17 +8,17 @@
 	<body>
 
     {% if message_not_books %}
-          <h4>{{ message_not_books }}</h4>
+          <h4>{{message_not_books}}</h4>
 
     {% else %}
           <h3>Список в алфавитном порядке</h3>
               {% for book in book_username %}
-                  <li><h4>{{ book.title }}</h4></li>
-                  <li>Автор: {{ book.author }}</li>
-                  <li>Год написания: {{ book.year }}</li>
-                  <li>Универсальный номер: {{ book.universal_number }}</li>
-                  <li>Количество: {{ book.count }} шт</li>
-                  <li>Местонахождение: {{ book.hand }}</li>
+                  <li><h4>{{book.title}}</h4></li>
+                  <li>Автор: {{book.author}}</li>
+                  <li>Год написания: {{book.year}}</li>
+                  <li>Универсальный номер: {{book.universal_number}}</li>
+                  <li>Количество: {{book.count}} шт</li>
+                  <li>Местонахождение: {{book.hand}}</li>
                   <br>
               {% endfor %}
 
