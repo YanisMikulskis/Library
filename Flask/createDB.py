@@ -15,8 +15,10 @@ connect = sqlite3.connect('Library_Database_Flask')
 engine = create_engine('sqlite:///Library_Database_Flask')
 metadata = MetaData()
 
+
 class Base(DeclarativeBase):
     pass
+
 
 class Library_Flask(Base):
     __tablename__ = 'Flask_Table_Library'
@@ -29,8 +31,10 @@ class Library_Flask(Base):
     user_book_id = Column(Integer, ForeignKey('Flask_Table_Users.id'))
 
     users = relationship('User_Flask', back_populates='books')
+
     def __repr__(self):
-        return f'number: %r\npk: %r\ntitle: %r\nauthor: %r\nyear: %r\n' % (self.personal_number, self.id, self.title, self.author, self.year)
+        return f'number: %r\npk: %r\ntitle: %r\nauthor: %r\nyear: %r\n' % (
+            self.personal_number, self.id, self.title, self.author, self.year)
 
 
 class User_Flask(Base):
@@ -40,11 +44,11 @@ class User_Flask(Base):
     email = Column(String(100), nullable=False, unique=True)
     password = Column(String(64), nullable=True, unique=False)
     books = relationship('Library_Flask', back_populates='users')
+
     def __repr__(self):
         return f'name: %r\nemail: %r\nbooks: %r\n' % (self.name, self.email, self.books)
+
+
 Base.metadata.create_all(bind=engine)
 session = sessionmaker(autoflush=False, bind=engine)
 db_session = session()
-
-
-

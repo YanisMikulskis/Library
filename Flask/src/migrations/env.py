@@ -6,8 +6,6 @@ from sqlalchemy import pool
 from alembic import context
 from sqlalchemy.orm import DeclarativeBase
 
-
-
 import os
 
 os.chdir('/Users/yanis/Desktop/Professional_PYCH/GitREPs/Library/Flask')
@@ -22,7 +20,6 @@ target_metadata = get_base().metadata
 
 
 def run_migrations_offline() -> None:
-
     url = config.get_main_option("sqlalchemy.url")
     context.configure(
         url=url,
@@ -36,7 +33,6 @@ def run_migrations_offline() -> None:
 
 
 def run_migrations_online() -> None:
-
     connectable = engine_from_config(
         config.get_section(config.config_ini_section, {}),
         prefix="sqlalchemy.",
