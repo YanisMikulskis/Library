@@ -19,7 +19,6 @@ class Book:
         request_html = requests.get(url)
 
         soup: bs4.BeautifulSoup = BeautifulSoup(request_html.text, 'html.parser')
-        print(type(soup))
         self.title: str = re.findall(r'>(.+)</a>', str(soup.find_all(class_='blvi__title')))[0]
         self.title: str = self.title[:-1] if self.title[-1] == ' ' else self.title
         book_info: str = str(soup.find_all(class_='blvi__book_info'))
