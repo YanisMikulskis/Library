@@ -272,46 +272,6 @@ class Library:  # Основной класс приложения
                 book_location = f'В библиотеке'
             book[-1] = book_location
             print(' | '.join(list(map(str, book))))
-
-
-lib = Library()
-print(f'Добро пожаловать в онлайн библиотеку!')
-commands = {
-    1: lambda: lib.add_book(),
-    2: lambda: lib.remove_book(),
-    3: lambda: lib.find_book(),
-    4: lambda: lib.register_user(),
-    5: lambda: lib.checkout_book(),
-    6: lambda: lib.return_book(),
-    7: lambda: lib.checkout_report(False),
-    8: lambda: lib.return_report(),
-    9: lambda: lib.general_report()
-}
-
-
-def main() -> None:  # Функция запуска словаря лямбда функций с вызовами методов класса Library
-    while 1:
-        start_app = int(input('Что хотите сделать? Введите соответсвующую цифру!\n'
-                              '1 - Добавить книгу в библиотеку\n'
-                              '2 - Удалить книгу из библиотеки по ID\n'
-                              '3 - Найти книгу в библиотеке по ID\n'
-                              '4 - Зарегистрировать нового читателя\n'
-                              '5 - Выдать читателю книгу\n'
-                              '6 - Оформить возврата книги читателем\n'
-                              '7 - Составить отчет о книгах на руках\n'
-                              '8 - Составить отчет о книгах в библиотеке\n'
-                              '9 - Составить общий отчет о состоянии библиотеки\n'))
-        if start_app in list(range(1, 10)):
-            commands[start_app]()
-        else:
-            print(f'Нет такого номера команды!')
-
-
-
-
-
-
-if __name__ == '__main__':
-    main()
-
+    def close(self):
+        exit()
 
