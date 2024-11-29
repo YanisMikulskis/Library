@@ -428,5 +428,4 @@ def general_report() -> Callable:
                            readers_active=readers_active)
 
 
-if __name__ == '__main__':
-    app.run(debug=True)
+
